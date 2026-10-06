@@ -24,6 +24,8 @@ Randomisieren funktionieren auf dem Gerät ohne PC oder Netzwerk.
   Transfers warten auf die Spielwelt, damit offene PC-/Team-Menüs gültig bleiben.
 - Standard-Game-Over bei Verlust des ganzen Teams. Retry und Time Machine gesperrt.
 - Ein Fang ODER Wild-KO pro Ort über alle Etagen/Methoden hinweg; Shiny-KO zusätzlich.
+- Vertanias Fangdemo wird über FireReds Tutorial-Kampfkennzeichen ausgenommen;
+  sie verbraucht keinen Encounter und löst keine Fangbestätigung oder Runsperre aus.
 - Neuer Fang kann ungesehen verworfen werden. Scouts dürfen weiterhin Bälle werfen.
 - Shops bieten nur Bälle und Repels; Automaten/Barter haben zusätzliche Inventarprüfungen.
 - Lucky Egg/Sacred Ash und VS Seeker gesperrt; gehaltene Bans im Labor erlaubt.

@@ -19,7 +19,7 @@ used,action=P.wildResult(false,7,false,true);assert(used and action=='catch')
 assert(not P.starterAllowed(150,150,{},false))
 assert(P.starterAllowed(150,1,{150},false))
 assert(P.starterAllowed(150,1,{},true))
-GameSettings={pstats=0x02024284,gPlayerPartyCount=0x02024029,gSaveBlock1ptr=0x03005008,gSaveBlock2ptr=0x0300500c,gMapHeader=0x02036dfc,gBattleOutcome=0x02023e8a,estats=0x0202402c}
+GameSettings={pstats=0x02024284,gPlayerPartyCount=0x02024029,gSaveBlock1ptr=0x03005008,gSaveBlock2ptr=0x0300500c,gMapHeader=0x02036dfc,gBattleOutcome=0x02023e8a,gBattleTypeFlags=0x02022b4c,gTrainerBattleOpponent_A=0x020386ae,estats=0x0202402c}
 Program={GameData={mapId=1},isValidMapLocation=function()return true end,inCatchingTutorial=false}
 Battle={inBattleScreen=false,isWildEncounter=false}
 RouteData={Info={[1]={name='Route 1'}}}
@@ -99,5 +99,43 @@ for permutation=0,23 do
     for i=0,11 do local word=r32(target+32+i*4)~pid~0x12345678;sum=(sum+(word&65535)+(word>>16))&65535 end
     assert(sum==r16(target+28),'checksum failed for permutation '..permutation)
 end
+-- The Old Man demo reports CAUGHT without adding a Pokemon. Its tracker flag
+-- can clear while Battle.inBattleScreen remains true, or only appear late.
+R.ended=false;paused=false;R.battle=nil;R.routes={};R.firstBattle=false;R.pending=nil;R.dead={};R.rejected={}
+mon(0,48,19,20,0)
+w32(GameSettings.gBattleTypeFlags,0x200)
+Battle.inBattleScreen=true;Battle.isWildEncounter=true
+w8(GameSettings.gBattleOutcome,0);Program.inCatchingTutorial=false
+R.update()
+assert(not R.battle and not R.firstBattle,'demo became a real battle before tutorial flag')
+R.battle={wild=true,route=88,before={}}
+Program.inCatchingTutorial=true;R.update()
+assert(not R.battle,'late tutorial detection retained a real battle snapshot')
+Program.inCatchingTutorial=false;w8(GameSettings.gBattleOutcome,7);R.update()
+assert(not R.ended and not R.pending and not R.routes[88],'demo catch ended or consumed run')
+Battle.inBattleScreen=false;R.update()
+assert(not R.ended and not R.pending and not R.routes[88],'demo exit became a real catch')
+-- Even a stale snapshot at the first non-battle frame must not consume a route.
+R.battle={wild=true,route=88,before={}};w8(GameSettings.gBattleOutcome,1);R.update()
+assert(not R.routes[88] and not R.ended,'stale tutorial outcome became a wild KO')
+-- Tutorial flags persist outside battle: normal held-item guards still work.
+local a,g=mon(0,48,19,20,197);R.update()
+assert((r32(g)~48~0x12345678)>>16==0,'persistent tutorial flag disabled field guards')
+-- A subsequent real catch still asks for confirmation, and a second KO fails.
+w32(GameSettings.estats,32);w32(GameSettings.estats+4,0) -- non-shiny identity
+w32(GameSettings.gBattleTypeFlags,4);w8(GameSettings.gBattleOutcome,0)
+Battle.inBattleScreen=true;R.update();assert(R.battle and R.firstBattle)
+w8(GameSettings.gPlayerPartyCount,2);mon(1,4800,25,20,0)
+Battle.inBattleScreen=false;w8(GameSettings.gBattleOutcome,7);R.update()
+assert(R.pending and R.pending.species==25 and not R.routes[88] and paused,'real catch bypassed confirmation')
+R.keepCapture();assert(R.routes[88] and not R.pending and not paused)
+Battle.inBattleScreen=true;w8(GameSettings.gBattleOutcome,0);R.update()
+Battle.inBattleScreen=false;w8(GameSettings.gBattleOutcome,1);R.update()
+assert(R.ended and R.reason=='Regelbruch: Zweiter Wild-KO an diesem Ort.','real second KO was exempted')
+-- Unexplained real catches retain the original fail-closed behavior.
+R.ended=false;paused=false;R.routes={}
+Battle.inBattleScreen=true;w8(GameSettings.gBattleOutcome,0);R.update()
+Battle.inBattleScreen=false;w8(GameSettings.gBattleOutcome,7);R.update()
+assert(R.ended and R.reason=='Fangdaten unklar: Run angehalten.','unknown real catch was exempted')
 io.open=oldopen
-print('PASS: route/shiny/capture policy, bans, encrypted mon transfer, item lock, shops, resurrection, team wipe')
+print('PASS: route/shiny/capture policy, tutorial transitions, real catches, bans, encrypted mon transfer, item lock, shops, resurrection, team wipe')

@@ -39,6 +39,19 @@ zum Overworld-Callback. Die verwendete englische Rev-1-Adresse wurde unabhängig
 auf dem gpSP-Core beobachtet und mit `pret/pokefirered/src/overworld.c` sowie
 dem Code des eigenen ROM-Dumps abgeglichen.
 
+Die Ausnahme für Vertanias Fangdemo basiert auf `BATTLE_TYPE_OLD_MAN_TUTORIAL`
+in [battle.h](https://github.com/pret/pokefirered/blob/037335f4c725d7c9aecdac87066f2002b4bd7e14/include/constants/battle.h),
+[StartOldManTutorialBattle in battle_setup.c](https://github.com/pret/pokefirered/blob/037335f4c725d7c9aecdac87066f2002b4bd7e14/src/battle_setup.c)
+und der besonderen Fangbehandlung in
+[battle_script_commands.c](https://github.com/pret/pokefirered/blob/037335f4c725d7c9aecdac87066f2002b4bd7e14/src/battle_script_commands.c).
+Die Speicheradresse stammt aus der originalen
+[FireRed-v1.1-Adressdatei](https://github.com/besteon/Ironmon-Tracker/blob/v9.4.0/ironmon_tracker/GameAddresses/Pokemon%20FireRed%20v1.1.json).
+Der vollständige Gerätetest nutzt ausschließlich in einer isolierten Kopie
+`VAR_MAP_SCENE_VIRIDIAN_CITY_OLD_MAN` aus
+[vars.h](https://github.com/pret/pokefirered/blob/037335f4c725d7c9aecdac87066f2002b4bd7e14/include/constants/vars.h)
+und die normalen Eingaben für das originale
+[ViridianCity-Script](https://github.com/pret/pokefirered/blob/037335f4c725d7c9aecdac87066f2002b4bd7e14/data/maps/ViridianCity/scripts.inc).
+
 ## Prüfsummen
 
 - Benötigte eigene Basis-ROM, SHA-1: `dd5945db9b930750cb39d00c84da8571feebf417`.

@@ -256,7 +256,13 @@ local function roster()
     boxSlots(function(a) t[identity(a)]={a=a,species=species(a)} end)
     return t
 end
+local function oldManTutorial()
+    -- FireRed's demo reports CAUGHT but deliberately adds no Pokemon to the
+    -- player's roster. Program.inCatchingTutorial can clear before Battle does.
+    return (rd(GameSettings.gBattleTypeFlags)&0x200)~=0
+end
 local function finishBattle(b)
+    if oldManTutorial() then return end
     local outcome=rb(GameSettings.gBattleOutcome)
     if not b.wild and outcome==1 then R.trainers[b.trainer]=true;R.save()
     elseif b.wild and outcome==1 then
@@ -291,7 +297,14 @@ function R.update()
     end
     if R.ended then client.pause();return end
     if R.pending then client.pause() end
-    local inBattle=Battle.inBattleScreen and not Program.inCatchingTutorial
+    -- Ignore the entire demonstration, including stale tracker battle state on
+    -- exit. Its raw battle flag persists in the field, so only suppress active
+    -- battle updates here; normal field guards must continue afterwards.
+    if Program.inCatchingTutorial or (Battle.inBattleScreen and oldManTutorial()) then
+        R.battle=nil
+        return
+    end
+    local inBattle=Battle.inBattleScreen
     if inBattle and not R.battle then
         local b={route=R.routeKey(),wild=Battle.isWildEncounter,before=roster(),items={},stolen={},shiny=isShiny(GameSettings.estats),trainer=rw(GameSettings.gTrainerBattleOpponent_A)}
         if not b.wild and (R.trainers[b.trainer] or TrackerAPI.hasDefeatedTrainer(b.trainer)) then R.endRun('Regelbruch: Trainer-Revanche.');return end

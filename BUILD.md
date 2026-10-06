@@ -45,6 +45,14 @@ file IO and checks encrypted Pokemon records, all 24 substructure permutations,
 dead-item removal, party compaction, resurrection, exact purchase reversal and
 Standard route/shiny/capture policy. Never run real emulation QA against user saves.
 
+The rule suite also checks Old Man tutorial entry/exit flag races, field guards
+after a persistent tutorial flag, actual capture confirmation and second-KO
+enforcement. `tests/tutorial_resume.lua` checks an isolated repaired checkpoint;
+`tests/tutorial_demo.lua` resets only that copy's Old Man scene variable and
+replays the full game-engine demonstration with actual inputs. Both require
+`IRONMON_TUTORIAL_QA=1` and a `data/.qa-allow` marker. Their bootstrap wrappers
+must never be used in the live app.
+
 `launch.sh --prepare-cache` creates two distinct randomized ROMs, each with its
 own emulated lab state after Mom's event. The launcher verifies the ROM hash
 before loading a prepared state. Preparation uses SDL dummy drivers and real
