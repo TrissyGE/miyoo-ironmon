@@ -37,6 +37,7 @@ dofile = function(path)
                 Options['GachaMon Ratings Ruleset'] = 'Standard'
                 Options['Generate ROM each time'] = true
                 Options.CONTROLS['Load next seed'] = 'NOTBOUND' -- Native held combo prevents accidental resets.
+                Options.CONTROLS['Toggle view'] = 'Start'
                 Options['Game Over condition'] = 'EntirePartyFaints'
                 Options['Enable restore points'] = false
                 Options.FILES['Source ROM'] = '../source.gba'
@@ -68,6 +69,20 @@ dofile = function(path)
         for _,key in ipairs({'RetryBattle','ContinuePlaying'}) do
             GameOverScreen.Buttons[key].isVisible=function() return false end
             GameOverScreen.Buttons[key].onClick=function() end
+        end
+    elseif path:match('[/\\]TrackerScreen%.lua$') then
+        local chooseBall=TrackerScreen.randomlyChooseBall
+        TrackerScreen.randomlyChooseBall=function()
+            if MiyooRules.starterSlot then TrackerScreen.PokeBalls.chosenBall=MiyooRules.starterSlot;return MiyooRules.starterSlot end
+            return chooseBall()
+        end
+        local drawBall=TrackerScreen.drawBallPicker
+        TrackerScreen.drawBallPicker=function()
+            if MiyooRules.starterSlot then TrackerScreen.PokeBalls.chosenBall=MiyooRules.starterSlot end
+            drawBall()
+        end
+        TrackerScreen.Buttons.RerollBallPicker.onClick=function()
+            MiyooRules.notify('Starter wurde vorab ausgelost: kein Reroll.')
         end
     elseif path:match('[/\\]TimeMachineScreen%.lua$') then
         TimeMachineScreen.createRestorePoint=function() end

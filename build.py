@@ -24,3 +24,5 @@ subprocess.run([str(sdk/'bin/arm-linux-gnueabihf-strip'),str(src/'ironmon')],che
 print('Build complete',flush=True)
 if '--lua' in __import__('sys').argv:
     subprocess.run([str(cc),*flags,str(lua/'lua.c'),str(liblua),'-ldl','-lm','-o',str(src/'lua-test')],check=True)
+if '--tests' in __import__('sys').argv:
+    subprocess.run([str(cc),*flags,str(src/'tests/test_panel_mapping.c'),'-o',str(base/'panel-test')],check=True)

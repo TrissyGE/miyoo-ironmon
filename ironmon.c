@@ -8,6 +8,7 @@
 #include <lauxlib.h>
 #include <lualib.h>
 #include "libretro.h"
+#include "panel_layout.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -31,7 +32,9 @@ static int ff_toggle=0,ff_latched=0,compact_active=0;
 static Uint32 reset_started=0;
 static int reset_triggered=0;
 static unsigned previous_buttons=0;
-static int mouse_x=310,mouse_y=80,mouse_left=0;
+static int mouse_x=596,mouse_y=180,mouse_left=0;
+static struct panel_region panel_regions[32];static int panel_count=0;
+static int viewport_w=512,viewport_h=342;
 static uint16_t buttons=0;
 static unsigned pixel_format=RETRO_PIXEL_FORMAT_0RGB1555;
 static unsigned long frames=0;
@@ -160,6 +163,7 @@ static int get_fps(lua_State *L){lua_pushnumber(L,60);return 1;}
 static int get_frame(lua_State *L){lua_pushinteger(L,frames);return 1;}
 static int raw_buttons(lua_State *L){lua_pushinteger(L,buttons);return 1;}
 static int compact_lua(lua_State *L){lua_pushboolean(L,compact_active);return 1;}
+static int cursor_lua(lua_State *L){lua_pushboolean(L,cursor_mode);return 1;}
 static int ff_config(lua_State *L){ff_toggle=lua_toboolean(L,1);ff_latched=0;return 0;}
 static int set_buttons(lua_State *L){buttons=luaL_checkinteger(L,1);return 0;}
 static int set_padding(lua_State *L){
@@ -169,11 +173,17 @@ static int set_padding(lua_State *L){
 }
 static int get_sound(lua_State *L){lua_pushboolean(L,audio_enabled);return 1;}
 static int set_sound(lua_State *L){audio_enabled=lua_toboolean(L,1);return 0;}
-static int get_mouse(lua_State *L){lua_newtable(L);lua_pushinteger(L,mouse_x);lua_setfield(L,-2,"X");lua_pushinteger(L,mouse_y);lua_setfield(L,-2,"Y");lua_pushboolean(L,mouse_left);lua_setfield(L,-2,"Left");lua_pushinteger(L,0);lua_setfield(L,-2,"Wheel");return 1;}
+static int get_mouse(lua_State *L){
+    int x,y;panel_pick(panel_regions,panel_count,mouse_x,mouse_y,&x,&y);
+    lua_newtable(L);lua_pushinteger(L,x);lua_setfield(L,-2,"X");lua_pushinteger(L,y);lua_setfield(L,-2,"Y");lua_pushboolean(L,mouse_left&&x>=0);lua_setfield(L,-2,"Left");lua_pushinteger(L,0);lua_setfield(L,-2,"Wheel");return 1;
+}
 static int get_joy(lua_State *L){
     const char*names[]={"B","Y","Select","Start","Up","Down","Left","Right","A","X","L","R"};
-    lua_newtable(L);for(int i=0;i<12;i++){lua_pushboolean(L,!cursor_mode&&((buttons>>i)&1));lua_setfield(L,-2,names[i]);}return 1;
+    int allowed=(buttons&0x109)!=0x109;
+    lua_getglobal(L,"MiyooQol");if(lua_istable(L,-1)){lua_getfield(L,-1,"trackerControlsAllowed");if(lua_isfunction(L,-1)&&lua_pcall(L,0,1,0)==LUA_OK)allowed=allowed&&lua_toboolean(L,-1);lua_pop(L,1);}lua_pop(L,1);
+    lua_newtable(L);for(int i=0;i<12;i++){int cursor_key=i==3||i==10||i==11;lua_pushboolean(L,allowed&&(!cursor_mode||cursor_key)&&((buttons>>i)&1));lua_setfield(L,-2,names[i]);}return 1;
 }
+static int pointer_lua(lua_State *L){mouse_x=luaL_checkinteger(L,1);mouse_y=luaL_checkinteger(L,2);if(mouse_x<0)mouse_x=0;if(mouse_x>639)mouse_x=639;if(mouse_y<0)mouse_y=0;if(mouse_y>479)mouse_y=479;return 0;}
 static int pause_lua(lua_State *L){(void)L;paused=1;return 0;}
 static int unpause_lua(lua_State *L){(void)L;paused=0;return 0;}
 static int transform(lua_State *L){lua_newtable(L);lua_pushvalue(L,1);lua_setfield(L,-2,"x");lua_pushvalue(L,2);lua_setfield(L,-2,"y");return 1;}
@@ -204,6 +214,18 @@ static void text_at(SDL_Surface *target,int x,int y,const char *text,uint32_t c,
 }
 static int compact_text(lua_State *L){text_at(screen,luaL_checkinteger(L,1),luaL_checkinteger(L,2),luaL_checkstring(L,3),color(L,4,0xffffffff),luaL_optinteger(L,5,17));return 0;}
 static int compact_rect(lua_State *L){SDL_Rect r={luaL_checkinteger(L,1),luaL_checkinteger(L,2),luaL_checkinteger(L,3),luaL_checkinteger(L,4)};SDL_FillRect(screen,&r,mapped_color(color(L,5,0xff17202b)));return 0;}
+static void panel_blit(struct panel_region r){
+    SDL_Rect src={r.sx,r.sy,r.sw,r.sh},dst={r.dx,r.dy,r.dw,r.dh};
+    SDL_SoftStretch(canvas,&src,screen,&dst);
+    if(panel_count<32)panel_regions[panel_count++]=r;
+}
+static int tracker_panel(lua_State *L){
+    struct panel_region r={luaL_checkinteger(L,1),luaL_checkinteger(L,2),luaL_checkinteger(L,3),luaL_checkinteger(L,4),luaL_checkinteger(L,5),luaL_checkinteger(L,6),luaL_checkinteger(L,7),luaL_checkinteger(L,8)};
+    if(r.sx<0||r.sy<0||r.sw<=0||r.sh<=0||r.sx+r.sw>canvas->w||r.sy+r.sh>canvas->h||r.dx<0||r.dy<0||r.dw<=0||r.dh<=0||r.dx+r.dw>640||r.dy+r.dh>480)return luaL_error(L,"Invalid Tracker panel bounds");
+    panel_blit(r);return 0;
+}
+static int viewport_lua(lua_State *L){lua_pushinteger(L,viewport_w);lua_pushinteger(L,viewport_h);return 2;}
+static int canvas_size(lua_State *L){lua_pushinteger(L,canvas->w);lua_pushinteger(L,canvas->h);return 2;}
 static int draw_text(lua_State *L){text_at(canvas,luaL_checknumber(L,1),luaL_checknumber(L,2),luaL_checkstring(L,3),color(L,4,0xFFFFFFFF),luaL_optnumber(L,6,9));return 0;}
 struct image_cache{char *path;SDL_Surface *image;};static struct image_cache images[2048];static unsigned image_count;
 static SDL_Surface *cached_image(const char *path){
@@ -261,7 +283,7 @@ static void register_api(lua_State *L){
     luaL_newmetatable(L,"ironmon.state");setfunc(L,"__gc",remove_core_state);lua_pop(L,1);
     lua_newtable(L);setfunc(L,"savecorestate",save_core_state);setfunc(L,"loadcorestate",load_core_state);setfunc(L,"removestate",remove_core_state);lua_setglobal(L,"memorysavestate");
     lua_newtable(L);setfunc(L,"drawText",draw_text);setfunc(L,"drawRectangle",draw_rect);setfunc(L,"drawEllipse",draw_ellipse);setfunc(L,"drawPixel",draw_pixel);setfunc(L,"drawLine",draw_line);setfunc(L,"drawImage",draw_image);setfunc(L,"drawImageRegion",draw_image_region);setfunc(L,"clearImageCache",clear_images);setfunc(L,"defaultTextBackground",noop);lua_setglobal(L,"gui");
-    lua_newtable(L);setfunc(L,"newRun",next_run);setfunc(L,"setCursor",set_cursor);setfunc(L,"frame",get_frame);setfunc(L,"buttons",raw_buttons);setfunc(L,"compact",compact_lua);setfunc(L,"fastForwardToggle",ff_config);setfunc(L,"text",compact_text);setfunc(L,"rect",compact_rect);setfunc(L,"setButtons",set_buttons);setfunc(L,"prepareDone",prep_done);setfunc(L,"checkpoint",checkpoint);lua_setglobal(L,"miyoo");
+    lua_newtable(L);setfunc(L,"newRun",next_run);setfunc(L,"setCursor",set_cursor);setfunc(L,"frame",get_frame);setfunc(L,"buttons",raw_buttons);setfunc(L,"compact",compact_lua);setfunc(L,"isCursor",cursor_lua);setfunc(L,"fastForwardToggle",ff_config);setfunc(L,"text",compact_text);setfunc(L,"rect",compact_rect);setfunc(L,"panel",tracker_panel);setfunc(L,"viewport",viewport_lua);setfunc(L,"canvasSize",canvas_size);setfunc(L,"pointer",pointer_lua);setfunc(L,"setButtons",set_buttons);setfunc(L,"prepareDone",prep_done);setfunc(L,"checkpoint",checkpoint);lua_setglobal(L,"miyoo");
 }
 static int call_bool(const char *table,const char *method,int fallback){
     int top=lua_gettop(vm),result=fallback;lua_getglobal(vm,table);
@@ -280,15 +302,15 @@ static void input_events(void){
         if(down&&k==SDLK_ESCAPE){running=0;continue;}
         if(down&&k==SDLK_LSHIFT){if(call_bool("MiyooQol","allowOriginal",1))cursor_mode=!cursor_mode;mouse_left=0;continue;}
         if(down&&k==SDLK_LALT){view_mode=(view_mode+1)%4;continue;}
-        if(down&&k==SDLK_TAB)cursor_mode=0;
+        if(down&&k==SDLK_TAB&&call_bool("MiyooQol","canOpenMenu",1))cursor_mode=0;
         for(unsigned i=0;i<16;i++)if(keymap[i]&&k==keymap[i]){if(down)buttons|=1<<i;else buttons&=~(1<<i);}
     }
     if(cursor_mode){
-        if(buttons&(1<<RETRO_DEVICE_ID_JOYPAD_LEFT))mouse_x-=2;
-        if(buttons&(1<<RETRO_DEVICE_ID_JOYPAD_RIGHT))mouse_x+=2;
-        if(buttons&(1<<RETRO_DEVICE_ID_JOYPAD_UP))mouse_y-=2;
-        if(buttons&(1<<RETRO_DEVICE_ID_JOYPAD_DOWN))mouse_y+=2;
-        if(mouse_x<0)mouse_x=0;if(mouse_x>=canvas->w)mouse_x=canvas->w-1;if(mouse_y<0)mouse_y=0;if(mouse_y>=canvas->h)mouse_y=canvas->h-1;
+        if(buttons&(1<<RETRO_DEVICE_ID_JOYPAD_LEFT))mouse_x-=4;
+        if(buttons&(1<<RETRO_DEVICE_ID_JOYPAD_RIGHT))mouse_x+=4;
+        if(buttons&(1<<RETRO_DEVICE_ID_JOYPAD_UP))mouse_y-=4;
+        if(buttons&(1<<RETRO_DEVICE_ID_JOYPAD_DOWN))mouse_y+=4;
+        if(mouse_x<0)mouse_x=0;if(mouse_x>=640)mouse_x=639;if(mouse_y<0)mouse_y=0;if(mouse_y>=480)mouse_y=479;
         mouse_left=(buttons>>RETRO_DEVICE_ID_JOYPAD_A)&1;
     }else mouse_left=0;
     unsigned pressed=buttons&~previous_buttons;
@@ -314,19 +336,30 @@ static void present(void){
     }
     SDL_BlitSurface(presentation,NULL,output,NULL);SDL_Flip(output);
 }
+static void draw_pointer(void){
+    if(cursor_mode){SDL_Rect a={mouse_x-5,mouse_y,11,1},b={mouse_x,mouse_y-5,1,11};SDL_FillRect(screen,&a,0xFFFF);SDL_FillRect(screen,&b,0xFFFF);}
+}
 static void display(void){
+    panel_count=0;
     int needs_native=call_bool("MiyooQol","needsNative",0);
-    if(needs_native||(!cursor_mode&&view_mode!=3)){
-        SDL_FillRect(screen,NULL,0);compact_active=needs_native||view_mode==1||(view_mode==0&&call_bool("MiyooQol","isCompact",1));
-        SDL_Rect dest=compact_active?(SDL_Rect){0,0,480,320}:(SDL_Rect){0,26,640,427};
-        if(game)SDL_SoftStretch(game,NULL,screen,&dest);
-        call_void("MiyooQol","draw");present();return;
+    if(needs_native||view_mode!=3){
+        SDL_FillRect(screen,NULL,0);compact_active=needs_native||cursor_mode||view_mode==1||(view_mode==0&&call_bool("MiyooQol","isCompact",1));
+        viewport_w=view_mode==1?480:512;viewport_h=view_mode==1?320:342;
+        SDL_Rect dest=compact_active?(SDL_Rect){0,0,viewport_w,viewport_h}:(SDL_Rect){0,26,640,427};
+        call_void("MiyooQol","prepareGame");
+        if(game){
+            if(call_bool("MiyooQol","useCompositeGame",0)){SDL_Rect src={pad_left,pad_top,240,160};SDL_SoftStretch(canvas,&src,screen,&dest);}
+            else SDL_SoftStretch(game,NULL,screen,&dest);
+        }
+        if(panel_count<32)panel_regions[panel_count++]=(struct panel_region){0,0,240,160,dest.x,dest.y,dest.w,dest.h};
+        call_void("MiyooQol","draw");draw_pointer();present();return;
     }
     compact_active=0;
+    call_void("MiyooQol","prepareGame");
     SDL_FillRect(screen,NULL,0);SDL_Rect source={0,0,canvas->w,canvas->h};
     int w=640,h=(int)(source.h*(640.0/source.w));if(h>420){h=420;w=(int)(source.w*(420.0/source.h));}SDL_Rect dest={(640-w)/2,(440-h)/2,w,h};
-    SDL_SoftStretch(canvas,&source,screen,&dest);
-    if(cursor_mode){int x=dest.x+(mouse_x-source.x)*dest.w/source.w,y=dest.y+(mouse_y-source.y)*dest.h/source.h;SDL_Rect a={x-4,y,9,1},b={x,y-4,1,9};SDL_FillRect(screen,&a,0xFFFF);SDL_FillRect(screen,&b,0xFFFF);}
+    panel_blit((struct panel_region){source.x,source.y,source.w,source.h,dest.x,dest.y,dest.w,dest.h});
+    draw_pointer();
     text_at(screen,12,444,cursor_mode?"Tracker: D-pad = cursor   A = click   X = play":"X: Tracker cursor   Y: View   Menu: Save & exit",0xFFEEEEEE,16);
     text_at(screen,12,464,"New run: A + B + Start    R2: Fast forward",0xFFAAAAAA,13);
     present();

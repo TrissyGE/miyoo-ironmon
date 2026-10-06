@@ -28,6 +28,12 @@ Weitere Machbarkeitsrecherche: [mGBA](https://mgba.io/),
 [Kaizo IronRed](https://github.com/U-K-L/Pokemon-Kaizo-IronRed),
 [Faster FireRed Super Kaizo](https://github.com/DrMaple/Faster-FireRed-Super-Kaizo).
 Das installierte Regelprofil bleibt Standard.
+Die neu angeordneten Panels und ihre Interaktionen stammen aus dem separat
+installierten Original: [TrackerScreen.lua](https://github.com/besteon/Ironmon-Tracker/blob/v9.4.0/ironmon_tracker/screens/TrackerScreen.lua),
+[Input.lua](https://github.com/besteon/Ironmon-Tracker/blob/v9.4.0/ironmon_tracker/Input.lua),
+[Battle.lua](https://github.com/besteon/Ironmon-Tracker/blob/v9.4.0/ironmon_tracker/Battle.lua),
+[Theme.lua](https://github.com/besteon/Ironmon-Tracker/blob/v9.4.0/ironmon_tracker/Theme.lua)
+und [ExternalUI.lua](https://github.com/besteon/Ironmon-Tracker/blob/v9.4.0/ironmon_tracker/ExternalUI.lua).
 Zusätzlich recherchiert: [pokeldn FRLG-Notizen](https://github.com/Decryptu/pokeldn/blob/main/docs/frlg_rom.md)
 zum Overworld-Callback. Die verwendete englische Rev-1-Adresse wurde unabhängig
 auf dem gpSP-Core beobachtet und mit `pret/pokefirered/src/overworld.c` sowie

@@ -9,9 +9,14 @@ Randomisieren funktionieren auf dem Gerät ohne PC oder Netzwerk.
 
 - Neue Seeds mit Faster FireRed 1.3.2, übersprungenem Oak-Intro und festen Namen.
 - Zwei vorbereitete Seeds: jeder mit eigenem, geprüftem Laborzustand nach Mom.
-- Adaptive Anzeige: großes Spiel außerhalb von Kämpfen; im Kampf 480×320 bei
-  exakt 2× Skalierung, daneben bekannte Gegnerdaten und darunter Team/Route.
-- Originaler Tracker samt Notizen weiterhin verfügbar; native Menüs per D-Pad.
+- Spiel mit 512×342 Pixeln, etwa 14 % mehr Fläche als im ersten QoL-Layout.
+  Die echten Original-Panels werden rechts und unten angeordnet: Name/Item/Fähigkeit
+  und Stats rechts; Attackentabelle, Sprite/Typen, Heals und Carousel darunter.
+- Originalgrafiken und Themes, Gegner-Markierungen und vermutete Fähigkeiten,
+  eigene Werte samt Stat-Stufen, PP/Stärke/Genauigkeit und Original-Detailseiten.
+  Start wechselt wie im Original zwischen eigenem Pokémon und Gegner.
+- Originaler Tracker samt Notizen, Tastatur und Einstellungsseiten ist direkt in
+  dieser Ansicht bedienbar. Native QoL-Menüs übernehmen die Tracker-Farben.
 - R2-Tempo wahlweise halten oder umschalten. HP-/Giftwarnung und geschützter Reset.
 - Auto-Save/Resume, Run-Verlauf und standardmäßig acht abgeschlossene Run-Backups.
 - Permanente Todesliste mit Einlagerung nach dem Kampf und Vernichtung des
@@ -35,15 +40,23 @@ Gegnerdaten zeigen nur das, was der originale Tracker bereits kennt.
 
 | Taste | Funktion |
 | --- | --- |
-| A / B / D-Pad / Start / Select | Spiel |
-| X | Original-Tracker / Cursor; A klickt |
-| Y | Automatisch → kompakt → großes Spiel → Originalansicht |
+| A / B / D-Pad / Select | Spiel |
+| Start | Im Kampf: eigenes Pokémon / Gegner umschalten |
+| X | Cursor in der aktuellen Ansicht; D-Pad bewegt, A klickt |
+| L / R | Gegner-Stat auswählen / markieren; auch im Cursor-Modus |
+| Select im Cursor-Modus | Original-Notizfenster für den Gegner, inklusive Fähigkeiten |
+| B im Cursor-Modus | Detailseite oder Dialog verlassen |
+| Y | 512×342 + Tracker → pixelgenau 480×320 + Tracker → großes Spiel → Originalgesamtansicht |
 | L2 | Miyoo-Menü; D-Pad wählt, A bestätigt, B schließt |
 | R2 | Tempo halten oder umschalten; Einstellung im L2-Menü |
 | MENU | Speichern und schließen |
 | A+B+Start, zwei Sekunden halten | Neuer Run; erst nach dem ersten Kampf |
 
 Die GBA-Tasten L/R und die bisherigen Tracker-Kürzel bleiben verfügbar.
+Der Cursor pausiert das Spiel. Stat-Markierungen und Fähigkeitsnotizen werden
+in den originalen Tracker-Daten gespeichert. Informations- und Einstellungsseiten
+erscheinen vollständig als vergrößerte Fenster. Timer-/Repel-Einblendungen des
+Originals bleiben erhalten. Der Ball-Picker zeigt die regelkonforme Starterwahl.
 
 ## Daten und Voraussetzungen
 

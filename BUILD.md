@@ -9,7 +9,7 @@ Build requirements:
 1. Extract [Miyoo toolchain v0.0.3](https://github.com/shauninman/miyoomini-toolchain-buildroot/releases/download/v0.0.3/miyoomini-toolchain.tar.xz) and [Lua 5.4.8](https://www.lua.org/ftp/lua-5.4.8.tar.gz) into `build/`, preserving their top-level directories. Run the SDK relocation script from its directory.
 2. Put the Miyoo device's SDL, SDL_ttf and SDL_image shared libraries and their link dependencies in `device-libs/`, with the linker names `libSDL.so`, `libSDL_ttf.so` and `libSDL_image.so`.
 3. Run `python3 build.py` in Linux. The build uses the toolchain sysroot, statically links Lua, and dynamically uses the existing device libraries.
-4. Copy `ironmon`, `bootstrap.lua`, `forms.lua`, `rules.lua`, `rule_policy.lua`, `qol.lua`, `prepare.lua`, `launch.sh`, `seed-cache.sh`, `settings.ini`, `standard.rnqs` and `config.json` to the installed app directory. Shell files must have LF line endings and the program and launchers must be executable.
+4. Copy `ironmon`, `bootstrap.lua`, `forms.lua`, `rules.lua`, `rule_policy.lua`, `qol.lua`, `tracker_layout.lua`, `prepare.lua`, `launch.sh`, `seed-cache.sh`, `settings.ini`, `standard.rnqs` and `config.json` to the installed app directory. Shell files must have LF line endings and the program and launchers must be executable.
 
 Existing runtime dependencies are deliberately used instead of replacing firmware libraries. The launcher includes Onion's `parasyte` library directory because ARM Java requires its `libatomic.so.1`. Audio uses the existing Onion `libpadsp.so` and converts the core sample stream to 48 kHz.
 
@@ -49,3 +49,18 @@ Standard route/shiny/capture policy. Never run real emulation QA against user sa
 own emulated lab state after Mom's event. The launcher verifies the ROM hash
 before loading a prepared state. Preparation uses SDL dummy drivers and real
 controller inputs; the display's hardware presentation path is preserved.
+
+The layout reuses the original 9.4.0 framebuffer panels and their original click
+handlers. `panel_layout.h` maps the physical cursor back into those logical areas;
+later overlays take priority. `tracker_layout.lua` splits/repositions the panels
+with uniform scaling, and uses complete panels for detail pages, forms and overlays.
+The default game size is 512x342, with a separate exact 2x 480x320 mode.
+
+`python3 build.py --tests` builds `build/panel-test` for ARM. Run it on the isolated
+device installation to verify mapping boundaries, stat buttons and popup priority.
+`tests/layout_geometry.lua` checks LCD bounds, aspect ratios and retained controls
+for both layouts. The optional `tests/tracker_ui.lua` test requires an active battle,
+`IRONMON_UI_QA=1`, and a `data/.qa-allow` marker in the isolated app directory.
+It intentionally modifies test notes and checks actual cursor clicks, L/R marks,
+Start switching, dropdown paging, guessed ability saving, keyboard input, move
+details and B navigation. Never create its marker in the user's live installation.

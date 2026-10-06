@@ -3,9 +3,11 @@
 !/.gitignore
 !/.gitattributes
 !/ironmon.c
+!/panel_layout.h
 !/bootstrap.lua
 !/forms.lua
 !/qol.lua
+!/tracker_layout.lua
 !/rules.lua
 !/rule_policy.lua
 !/launch.sh
