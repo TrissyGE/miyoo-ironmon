@@ -53,6 +53,16 @@ replays the full game-engine demonstration with actual inputs. Both require
 `IRONMON_TUTORIAL_QA=1` and a `data/.qa-allow` marker. Their bootstrap wrappers
 must never be used in the live app.
 
+Party integrity checks cover plaintext records interrupted at a core frame
+boundary, inconsistent count/slots, all 24 permutations, intact survivors and
+boxed records. The native `miyoo.coreFrame()` counter advances only when the
+emulator runs, so cursor/UI pauses cannot trigger the persistent-data timeout.
+`tests/party_battle.lua` requires an isolated one-mon battle checkpoint,
+`IRONMON_PARTY_QA=1` and `data/.qa-allow`. It creates only a QA teammate, lets the
+enemy naturally KO a one-HP lead, switches, wins and verifies graveyard integrity.
+Require the explicit PASS line; the Tracker can catch bootstrap assertions even
+when the frontend's process exit code is zero.
+
 `launch.sh --prepare-cache` creates two distinct randomized ROMs, each with its
 own emulated lab state after Mom's event. The launcher verifies the ROM hash
 before loading a prepared state. Preparation uses SDL dummy drivers and real

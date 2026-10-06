@@ -38,6 +38,7 @@ static int viewport_w=512,viewport_h=342;
 static uint16_t buttons=0;
 static unsigned pixel_format=RETRO_PIXEL_FORMAT_0RGB1555;
 static unsigned long frames=0;
+static unsigned long core_frames=0;
 static int test_frames=0;
 static unsigned qa_frames=0;
 static FILE *replay;
@@ -161,6 +162,7 @@ static int get_rom_name(lua_State *L){lua_pushstring(L,rom_name);return 1;}
 static int get_rom_hash(lua_State *L){lua_pushstring(L,rom_hash);return 1;}
 static int get_fps(lua_State *L){lua_pushnumber(L,60);return 1;}
 static int get_frame(lua_State *L){lua_pushinteger(L,frames);return 1;}
+static int get_core_frame(lua_State *L){lua_pushinteger(L,core_frames);return 1;}
 static int raw_buttons(lua_State *L){lua_pushinteger(L,buttons);return 1;}
 static int compact_lua(lua_State *L){lua_pushboolean(L,compact_active);return 1;}
 static int cursor_lua(lua_State *L){lua_pushboolean(L,cursor_mode);return 1;}
@@ -283,7 +285,7 @@ static void register_api(lua_State *L){
     luaL_newmetatable(L,"ironmon.state");setfunc(L,"__gc",remove_core_state);lua_pop(L,1);
     lua_newtable(L);setfunc(L,"savecorestate",save_core_state);setfunc(L,"loadcorestate",load_core_state);setfunc(L,"removestate",remove_core_state);lua_setglobal(L,"memorysavestate");
     lua_newtable(L);setfunc(L,"drawText",draw_text);setfunc(L,"drawRectangle",draw_rect);setfunc(L,"drawEllipse",draw_ellipse);setfunc(L,"drawPixel",draw_pixel);setfunc(L,"drawLine",draw_line);setfunc(L,"drawImage",draw_image);setfunc(L,"drawImageRegion",draw_image_region);setfunc(L,"clearImageCache",clear_images);setfunc(L,"defaultTextBackground",noop);lua_setglobal(L,"gui");
-    lua_newtable(L);setfunc(L,"newRun",next_run);setfunc(L,"setCursor",set_cursor);setfunc(L,"frame",get_frame);setfunc(L,"buttons",raw_buttons);setfunc(L,"compact",compact_lua);setfunc(L,"isCursor",cursor_lua);setfunc(L,"fastForwardToggle",ff_config);setfunc(L,"text",compact_text);setfunc(L,"rect",compact_rect);setfunc(L,"panel",tracker_panel);setfunc(L,"viewport",viewport_lua);setfunc(L,"canvasSize",canvas_size);setfunc(L,"pointer",pointer_lua);setfunc(L,"setButtons",set_buttons);setfunc(L,"prepareDone",prep_done);setfunc(L,"checkpoint",checkpoint);lua_setglobal(L,"miyoo");
+    lua_newtable(L);setfunc(L,"newRun",next_run);setfunc(L,"setCursor",set_cursor);setfunc(L,"frame",get_frame);setfunc(L,"coreFrame",get_core_frame);setfunc(L,"buttons",raw_buttons);setfunc(L,"compact",compact_lua);setfunc(L,"isCursor",cursor_lua);setfunc(L,"fastForwardToggle",ff_config);setfunc(L,"text",compact_text);setfunc(L,"rect",compact_rect);setfunc(L,"panel",tracker_panel);setfunc(L,"viewport",viewport_lua);setfunc(L,"canvasSize",canvas_size);setfunc(L,"pointer",pointer_lua);setfunc(L,"setButtons",set_buttons);setfunc(L,"prepareDone",prep_done);setfunc(L,"checkpoint",checkpoint);lua_setglobal(L,"miyoo");
 }
 static int call_bool(const char *table,const char *method,int fallback){
     int top=lua_gettop(vm),result=fallback;lua_getglobal(vm,table);
@@ -396,7 +398,7 @@ int main(int argc,char**argv){
     const char*bootstrap=getenv("IRONMON_BOOTSTRAP");luaL_loadfile(co,bootstrap?bootstrap:"../bootstrap.lua");
     Uint32 start=SDL_GetTicks(),last_save=start;double deadline=start;int lua_status=LUA_YIELD,nresults=0;
     while(running){
-        if(replay){while(replay_pending&&frames>=replay_frame){buttons=replay_keys&0xFFFF;if(replay_keys&0x10000)cursor_mode=!cursor_mode;if(replay_keys&0x20000)view_mode=(view_mode+1)%4;if(replay_keys&0x40000)running=0;replay_pending=fscanf(replay,"%lu %x",&replay_frame,&replay_keys)==2;}}input_events();if(!paused&&!cursor_mode)r_run();frames++;
+        if(replay){while(replay_pending&&frames>=replay_frame){buttons=replay_keys&0xFFFF;if(replay_keys&0x10000)cursor_mode=!cursor_mode;if(replay_keys&0x20000)view_mode=(view_mode+1)%4;if(replay_keys&0x40000)running=0;replay_pending=fscanf(replay,"%lu %x",&replay_frame,&replay_keys)==2;}}input_events();if(!paused&&!cursor_mode){r_run();core_frames++;}frames++;
         if(game){SDL_Rect dst={pad_left,pad_top,0,0};SDL_BlitSurface(game,NULL,canvas,&dst);}
         if(lua_status==LUA_YIELD){lua_status=lua_resume(co,vm,0,&nresults);if(lua_status!=LUA_YIELD&&lua_status!=LUA_OK){fprintf(stderr,"TRACKER ERROR: %s\n",lua_tostring(co,-1));running=0;exit_code=3;}}
         if(frames%2==0&&!getenv("IRONMON_PREPARING"))display();

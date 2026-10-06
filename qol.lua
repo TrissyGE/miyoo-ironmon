@@ -78,10 +78,10 @@ function Q.input()
     end
 end
 function Q.isCompact() return true end
-function Q.allowOriginal() return not Q.menu and not MiyooRules.pending and not MiyooRules.ended and not MiyooDialogs.active end
+function Q.allowOriginal() return not Q.menu and not MiyooRules.pending and not MiyooRules.ended and not MiyooRules.unstableReported and not MiyooDialogs.active end
 function Q.canOpenMenu() return not MiyooRules.pending and not MiyooRules.ended and not MiyooDialogs.active end
-function Q.needsNative() return Q.menu or MiyooRules.pending or MiyooRules.ended or Layout.popup() end
-function Q.trackerControlsAllowed() return not Q.menu and not MiyooRules.pending and not MiyooRules.ended and not MiyooDialogs.active end
+function Q.needsNative() return Q.menu or MiyooRules.pending or MiyooRules.ended or MiyooRules.unstableReported or Layout.popup() end
+function Q.trackerControlsAllowed() return not Q.menu and not MiyooRules.pending and not MiyooRules.ended and not MiyooRules.unstableReported and not MiyooDialogs.active end
 function Q.useCompositeGame() return Program and not MiyooDialogs.active and not Program.currentOverlay end
 function Q.prepareGame()
     if Program and TrackerScreen and MiyooRules.starterSlot and not MiyooRules.starterLogged
@@ -132,6 +132,11 @@ function Q.draw()
             if f then for line in f:lines() do list[#list+1]=line end f:close() end
             for i=math.max(1,#list-6),#list do txt(43,306+(i-math.max(1,#list-6))*21,short(list[i]:gsub('^.-\t',''):gsub('\t','  '),52),14) end
         end
+    end
+    if r.unstableReported and not Q.menu and not r.ended and not r.pending then
+        box(20,90,445,135);txt(40,105,'DATENPRUEFUNG: ANGEHALTEN',21)
+        txt(40,145,'Ungueltige Pokemon-Daten. Kein Run-Verlust.',16)
+        txt(40,184,'L2: Menue / neuer Seed   MENU: Schliessen',16)
     end
 end
 Q.load()

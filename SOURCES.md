@@ -52,6 +52,19 @@ Der vollständige Gerätetest nutzt ausschließlich in einer isolierten Kopie
 und die normalen Eingaben für das originale
 [ViridianCity-Script](https://github.com/pret/pokefirered/blob/037335f4c725d7c9aecdac87066f2002b4bd7e14/data/maps/ViridianCity/scripts.inc).
 
+Die Absicherung der Pokémon-Schreibzugriffe orientiert sich an
+`DecryptBoxMon`, `EncryptBoxMon`, `CalculateBoxMonChecksum`, `GetBoxMonData3`
+und `SetBoxMonData` in
+[pokemon.c](https://github.com/pret/pokefirered/blob/037335f4c725d7c9aecdac87066f2002b4bd7e14/src/pokemon.c)
+sowie den Strukturen in
+[pokemon.h](https://github.com/pret/pokefirered/blob/037335f4c725d7c9aecdac87066f2002b4bd7e14/include/pokemon.h).
+Die 24 Substruktur-Anordnungen werden mit
+[MiscData.lua des Trackers](https://github.com/besteon/Ironmon-Tracker/blob/v9.4.0/ironmon_tracker/data/MiscData.lua)
+abgeglichen. Ein archivierter Geräte-Zustand zeigte einen gültigen, gerade
+entschlüsselten zweiten Teamdatensatz bei einer vorübergehenden Teamgröße von eins.
+Die unabhängigen Tests simulieren beide Zwischenzustände; ein realer gpSP-Kampf
+prüft tatsächlichen KO, Wechsel, Sieg und Einlagerung. Test-ROMs/Spielstände bleiben lokal.
+
 ## Prüfsummen
 
 - Benötigte eigene Basis-ROM, SHA-1: `dd5945db9b930750cb39d00c84da8571feebf417`.

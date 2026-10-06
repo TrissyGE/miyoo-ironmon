@@ -19,15 +19,28 @@ local function growth(a)
     local off=32+(MiscData.TableData.growth[pid%24+1]-1)*12
     return a+off,key
 end
+local function validBox(a)
+    -- The core yields at VBlank, which can interrupt Get/SetMonData between
+    -- DecryptBoxMon and EncryptBoxMon. Never edit that transient plaintext.
+    if not valid(a,80) or (rb(a+19)&3)~=2 then return false end
+    local key=rd(a)~rd(a+4);local sum=0
+    local g=growth(a);local id=(rd(g)~key)&0xffff
+    if id<1 or id>411 then return false end
+    for i=0,11 do local v=rd(a+32+i*4)~key;sum=(sum+(v&0xffff)+(v>>16))&0xffff end
+    return sum==rw(a+28)
+end
 local function species(a) local g,k=growth(a);return (rd(g)~k)&0xffff end
 local function setGrowth(a,index,value)
+    if not validBox(a) then return false end
     local g,k=growth(a);local old=rd(g+index*4)~k
+    if old==value then return true end
     local checksum=rw(a+28)
     checksum=(checksum-(old&0xffff)-(old>>16)+(value&0xffff)+(value>>16))&0xffff
     wd(g+index*4,value~k);ww(a+28,checksum)
+    return validBox(a)
 end
 local function held(a) local g,k=growth(a);return (rd(g)~k)>>16 end
-local function clearHeld(a) local g,k=growth(a);setGrowth(a,0,(rd(g)~k)&0xffff) end
+local function clearHeld(a) local g,k=growth(a);return setGrowth(a,0,(rd(g)~k)&0xffff) end
 local function isShiny(a)
     local pid,tid=rd(a),rd(a+4)
     return ((pid&0xffff)~(pid>>16)~(tid&0xffff)~(tid>>16))<8
@@ -38,6 +51,17 @@ local function storage()
 end
 local function party() return GameSettings.pstats end
 local function count() return math.min(6,rb(GameSettings.gPlayerPartyCount)) end
+local function partyReady()
+    local n=rb(GameSettings.gPlayerPartyCount)
+    if n>6 then return false end
+    for i=0,5 do
+        local a=party()+i*100;local occupied=(rb(a+19)&2)~=0
+        if i<n then
+            if not occupied or not validBox(a) then return false end
+        elseif occupied then return false end -- Party reorder/count update in progress.
+    end
+    return true
+end
 local function inField()
     -- Rev 1 CB2_Overworld, observed on the real core and matched to overworld.c.
     -- Menu callbacks retain party indices; never compact their live party data.
@@ -99,7 +123,7 @@ function R.endRun(reason)
     if miyoo.checkpoint then miyoo.checkpoint() end
 end
 function R.canReset()
-    if R.firstBattle or R.ended or count()==0 then return true end
+    if R.firstBattle or R.ended or R.unstableReported or count()==0 then return true end
     R.notify('Standard: Erst den Laborkampf spielen.');return false
 end
 function R.routeKey()
@@ -115,6 +139,7 @@ function R.lab()
     return name:find('lab',1,true)~=nil
 end
 function R.deposit(a,rejected)
+    if not partyReady() or not validBox(a) then return false end
     local base=storage();if not base then return false end
     local target
     -- Last available boxes are used as the graveyard. Preserve other box mons.
@@ -125,7 +150,7 @@ function R.deposit(a,rejected)
     if not target then R.endRun('Boxen voll: Kein sicherer Transfer moeglich.');return false end
     local id=identity(a)
     if rejected then R.rejected[id]=true else R.dead[id]=true end
-    clearHeld(a) -- No item can be salvaged, including from the box.
+    if not clearHeld(a) then return false end -- No item can be salvaged from the box.
     writeBytes(target,bytes(a,80))
     local index=(a-party())//100;local n=count()
     for i=index,n-2 do writeBytes(party()+i*100,bytes(party()+(i+1)*100,100)) end
@@ -291,11 +316,27 @@ end
 function R.update()
     if not GameSettings.pstats or not Program.isValidMapLocation() then return end
     if not R.loaded then
-        R.load();R.loaded=true;R.seen=R.seen or {}
+        R.load();R.loaded=true
+    end
+    if R.ended then client.pause();return end
+    if not partyReady() then
+        local frame=miyoo.coreFrame and miyoo.coreFrame() or miyoo.frame()
+        if frame~=R.lastUnstableFrame then
+            R.lastUnstableFrame=frame;R.unstableFrames=(R.unstableFrames or 0)+1
+        end
+        if R.unstableFrames>=120 and not R.unstableReported then
+            R.unstableReported=true;client.pause()
+            R.notify('Pokemon-Daten instabil: sicher angehalten.')
+            R.log('guard','party data stayed invalid; paused without a run loss')
+        end
+        return
+    end
+    R.unstableFrames=0;R.unstableReported=nil;R.lastUnstableFrame=nil
+    if not R.rosterLoaded then
+        R.rosterLoaded=true;R.seen=R.seen or {}
         for id in pairs(roster()) do R.seen[id]=true end
         if count()==0 then R.setupStarter() end
     end
-    if R.ended then client.pause();return end
     if R.pending then client.pause() end
     -- Ignore the entire demonstration, including stale tracker battle state on
     -- exit. Its raw battle flag persists in the field, so only suppress active
@@ -319,6 +360,7 @@ function R.update()
     if R.ended then return end
     local living,real=0,0
     partySlots(function(a)
+        if (rb(a+19)&4)~=0 then return end -- Eggs cannot fight and do not constitute a wipe.
         local id=identity(a);real=real+1
         if rw(a+88)>0 and rb(a+84)>0 and rw(a+86)==0 then
             if not R.dead[id] then R.dead[id]=true;R.log('death',(PokemonData.Pokemon[species(a)] or {}).name or id);R.save() end

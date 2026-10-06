@@ -22,6 +22,9 @@ Randomisieren funktionieren auf dem Gerät ohne PC oder Netzwerk.
 - Permanente Todesliste mit Einlagerung nach dem Kampf und Vernichtung des
   getragenen Items; Zurückholen/Heilen reaktiviert tote Pokémon nicht.
   Transfers warten auf die Spielwelt, damit offene PC-/Team-Menüs gültig bleiben.
+- Pokémon-Schreibzugriffe prüfen Verschlüsselung/Checksumme; vorübergehend
+  entschlüsselte Datensätze und unvollständige Teamumsortierungen werden abgewartet.
+  Ein dauerhaft ungültiger Zustand pausiert technisch und zählt nicht als Niederlage.
 - Standard-Game-Over bei Verlust des ganzen Teams. Retry und Time Machine gesperrt.
 - Ein Fang ODER Wild-KO pro Ort über alle Etagen/Methoden hinweg; Shiny-KO zusätzlich.
 - Vertanias Fangdemo wird über FireReds Tutorial-Kampfkennzeichen ausgenommen;

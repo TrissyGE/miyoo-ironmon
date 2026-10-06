@@ -137,5 +137,63 @@ R.ended=false;paused=false;R.routes={}
 Battle.inBattleScreen=true;w8(GameSettings.gBattleOutcome,0);R.update()
 Battle.inBattleScreen=false;w8(GameSettings.gBattleOutcome,7);R.update()
 assert(R.ended and R.reason=='Fangdaten unklar: Run angehalten.','unknown real catch was exempted')
+-- Model the actual frame-boundary failure: game functions temporarily decrypt
+-- records and update count/slots in separate instructions. Guards must wait.
+local coreFrame=0
+miyoo.coreFrame=function()return coreFrame end
+local function step()coreFrame=coreFrame+1;R.update()end
+local function crypt(a)
+    local key=r32(a)~r32(a+4)
+    for i=0,11 do w32(a+32+i*4,r32(a+32+i*4)~key) end
+end
+local function record(a,n)
+    local t={};for i=0,(n or 100)-1 do t[#t+1]=string.char(memory.read_u8(a+i)) end
+    return table.concat(t)
+end
+local function checksumValid(a)
+    local key=r32(a)~r32(a+4);local sum=0
+    for i=0,23 do local shift=(i%2)*16;sum=(sum+((r16(a+32+i*2)~((key>>shift)&65535))&65535))&65535 end
+    return sum==r16(a+28)
+end
+Battle.inBattleScreen=false;w8(GameSettings.gBattleOutcome,4)
+w32(0x030030f4,0x08000001) -- Remain in a menu until the final transfer check.
+for permutation=0,23 do
+    R.ended=false;paused=false;R.battle=nil;R.pending=nil;R.dead={};R.rejected={};R.seen={}
+    R.unstableFrames=0;R.lastUnstableFrame=nil;R.unstableReported=nil
+    w8(GameSettings.gPlayerPartyCount,2)
+    local pid=7200+permutation
+    local lead=mon(0,pid,25,0,197);local survivor=mon(1,48,19,20,0)
+    local id=string.format('%08x:%08x',pid,0x12345678)
+    R.seen[id]=true;R.seen['00000030:12345678']=true
+    crypt(lead);local transient=record(lead)
+    step()
+    assert(record(lead)==transient and not R.dead[id] and not R.ended,'modified decrypted lead '..permutation)
+    assert(not R.deposit(lead,false),'deposited a decrypted record')
+    crypt(lead)
+    w8(GameSettings.gPlayerPartyCount,1);local intact=record(lead)
+    step()
+    assert(record(lead)==intact and not R.dead[id] and not R.ended,'count/slot race caused a wipe')
+    w8(GameSettings.gPlayerPartyCount,2)
+    crypt(survivor);transient=record(survivor);step()
+    assert(record(survivor)==transient and not R.dead[id],'edited team while survivor decrypted')
+    crypt(survivor);local originalSurvivor=record(survivor);step()
+    assert(R.dead[id] and not R.ended and not paused,'one actual death ended a two-mon team')
+    assert(checksumValid(lead) and memory.read_u8(lead+19)==2,'death produced an invalid/bad-egg record')
+    assert(record(survivor)==originalSurvivor,'death damaged the surviving mon')
+    w32(0x030030f4,0x080565c9);step()
+    assert(memory.read_u8(GameSettings.gPlayerPartyCount)==1 and record(GameSettings.pstats)==originalSurvivor,'graveyard damaged the survivor')
+    local grave
+    for slot=0,419 do local a=0x02029800+4+slot*80;if r32(a)==pid then grave=a;break end end
+    assert(grave and checksumValid(grave) and memory.read_u8(grave+19)==2,'graveyard record corrupted')
+    w32(0x030030f4,0x08000001)
+end
+-- UI/cursor frames do not turn a single interrupted core frame into a failure.
+R.ended=false;paused=false;R.dead={};R.rejected={};R.seen={};R.unstableFrames=0;R.lastUnstableFrame=nil
+w8(GameSettings.gPlayerPartyCount,2);local lead=mon(0,9600,25,0,197);mon(1,48,19,20,0)
+crypt(lead);step()
+for i=1,1000 do R.update() end
+assert(not paused and R.unstableFrames==1,'paused cursor frames triggered integrity halt')
+for i=1,119 do step() end
+assert(paused and not R.ended and R.unstableReported,'persistent corruption was scored as a loss')
 io.open=oldopen
-print('PASS: route/shiny/capture policy, tutorial transitions, real catches, bans, encrypted mon transfer, item lock, shops, resurrection, team wipe')
+print('PASS: route/capture/tutorial rules, all 24 permutations, decrypted-frame/count races, two-mon deaths, graveyard integrity, cursor pause and persistent-data halt')
