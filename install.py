@@ -24,7 +24,7 @@ import zipfile
 
 from prepare_rom import BASE_SHA1, apply_ips, restrict_shops, speech_skip
 
-VERSION = '0.1.0'
+VERSION = '0.1.1'
 HERE = Path(getattr(sys, '_MEIPASS', Path(__file__).resolve().parent))
 BIOS_SHA1 = '300c20df6731a33952ded8c436f7f186d25d3492'
 MAX_EXPANDED = 512 * 1024 * 1024

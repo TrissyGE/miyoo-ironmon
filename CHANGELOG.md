@@ -1,6 +1,11 @@
 # Changelog
 
-## 0.1.0 â€” 2026-10-08
+## 0.1.1 - 2026-10-08
+
+- Correct the encoding of punctuation, arrows and accented text in the English README and changelog.
+- Repackage the guided installers with the corrected documentation; app behavior is unchanged.
+
+## 0.1.0 — 2026-10-08
 
 First public release after private development and real Miyoo playtesting.
 
