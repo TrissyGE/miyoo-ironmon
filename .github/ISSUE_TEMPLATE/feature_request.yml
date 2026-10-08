@@ -1,0 +1,17 @@
+name: Feature request
+description: Suggest an improvement to the Miyoo experience.
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would this improve?
+      description: Describe the current experience and the problem you want to solve.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Suggested behavior
+      description: Include control or layout ideas if relevant, and any original Tracker feature or source link.
+    validations:
+      required: true

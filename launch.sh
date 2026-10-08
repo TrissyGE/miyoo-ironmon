@@ -6,6 +6,21 @@ export LD_PRELOAD=/mnt/SDCARD/miyoo/lib/libpadsp.so
 start_cache() {
     IRONMON_ROOT="$root" nohup nice -n 19 sh "$root/seed-cache.sh" >"$root/data/cache-worker.log" 2>&1 </dev/null &
 }
+status_pid=
+stop_status() {
+    [ -z "$status_pid" ] || { kill "$status_pid" 2>/dev/null; wait "$status_pid" 2>/dev/null; }
+    status_pid=
+}
+trap 'stop_status' EXIT
+trap 'exit 1' INT TERM HUP
+prepare_new_run() {
+    (cd "$root/tracker" && exec ../ironmon --status 'Preparing a new IronMON run...' >../data/status.log 2>&1) &
+    status_pid=$!
+    new_run
+    result=$?
+    stop_status
+    return "$result"
+}
 recover_transition() {
     [ -f data/transition.txt ] || return 0
     phase=;archive=;attempt=
@@ -77,7 +92,7 @@ new_run() {
 recover_transition || exit 1
 if [ "$1" = '--recover-only' ];then exit 0;fi
 if [ "$1" = '--prepare-cache' ];then IRONMON_ROOT="$root" sh ./seed-cache.sh;exit $?;fi
-if [ "$1" = '--new-run' ] || [ ! -s data/current.gba ];then new_run || exit 1;fi
+if [ "$1" = '--new-run' ] || [ ! -s data/current.gba ];then prepare_new_run || exit 1;fi
 [ -f data/attempt.txt ] || echo 1 >data/attempt.txt
 start_cache
 while :;do
@@ -85,12 +100,12 @@ while :;do
     ../ironmon /mnt/SDCARD/RetroArch/.retroarch/cores/gpsp_libretro.so ../data/current.gba >../data/frontend.log 2>&1
     result=$?
     cd "$root" || exit 1
-    if [ "$result" -eq 42 ];then new_run || break;start_cache
+    if [ "$result" -eq 42 ];then prepare_new_run || break;start_cache
     else
         sync
-        if [ "$result" -ne 0 ];then /mnt/SDCARD/.tmp_update/bin/infoPanel --title IronMON --message 'IronMON wurde angehalten. Details: App/IronMON/data/frontend.log';fi
+        if [ "$result" -ne 0 ];then /mnt/SDCARD/.tmp_update/bin/infoPanel --title IronMON --message 'IronMON stopped. See App/IronMON/data/frontend.log';fi
         start_cache;exit "$result"
     fi
 done
-/mnt/SDCARD/.tmp_update/bin/infoPanel --title IronMON --message 'Seed konnte nicht vorbereitet werden. Details: App/IronMON/data/cache-worker.log'
+/mnt/SDCARD/.tmp_update/bin/infoPanel --title IronMON --message 'Seed preparation failed. See App/IronMON/data/cache-worker.log'
 exit 1

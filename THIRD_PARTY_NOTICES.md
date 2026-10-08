@@ -1,22 +1,39 @@
-# Lizenzen und Abgrenzung
+# Third-party notices
 
-Der eigene Port wird unter GPL-3.0-only bereitgestellt; siehe LICENSE.
-Die Intro-Routine in prepare_rom.py basiert auf DrMaples GPL-3.0 Patch Editor.
-Die verwendeten UPR-ZX-Konfigurationsadressen stammen aus GPL-3.0-or-later-Code.
-Die konkreten Quellen und Versionsstände stehen in [SOURCES.md](SOURCES.md).
+The custom port and installer are **GPL-3.0-only**; see [LICENSE](LICENSE).
+The intro routine in `prepare_rom.py` is adapted from DrMaple's GPL-3.0 Patch
+Editor. UPR ZX configuration addresses derive from GPL-3.0-or-later code.
+Exact references/versions are in [SOURCES.md](SOURCES.md).
 
-`libretro.h` enthält seine eigene MIT-Lizenz. `stb_image.h` enthält seine
-MIT/Public-Domain-Lizenz. Für den eingebetteten Lua-Interpreter liegt
-[LUA-LICENSE.txt](LUA-LICENSE.txt) bei. Die Tracker-Lizenz bleibt im separat
-installierten Original-Tracker erhalten. JRE-Lizenz- und Legal-Verzeichnisse
-bleiben in der separat installierten Runtime erhalten.
+## Included in the source / app payload
 
-ROMs, BIOS, Saves, Tracker-Medien, Fonts, JRE, Randomizer-JAR, Faster-FireRed-IPS,
-Firmwarebibliotheken und der gpSP-Core gehören nicht zum Quellcodepaket.
-Für Faster FireRed ist im Repository keine allgemeine Weitergabelizenz angegeben;
-deshalb verweist der Patcher auf den Download beim Autor. Eine spätere öffentliche
-Veröffentlichung verteilt nur eigenen Code und die aufgeführten lizenzierten Header.
+- `libretro.h`: MIT notice retained in the header.
+- `stb_image.h`: MIT / public-domain notice retained in the header.
+- Lua 5.4.8: statically linked into the ARM frontend; MIT notice in [LUA-LICENSE.txt](LUA-LICENSE.txt).
+- Custom program, adapter, guards, installer and documentation: GPL-3.0-only. Corresponding source is in this repository and the matching release tag.
 
-Pokémon und die entsprechenden Spielinhalte/Marken gehören ihren Rechteinhabern.
-Es besteht keine Verbindung zu Nintendo, Game Freak, The Pokémon Company,
-IronMON, dem Tracker-Projekt oder Onion.
+## Downloaded by the installer
+
+- Original Ironmon Tracker 9.4.0: MIT; `tracker/LICENSE.txt` and the original release files are retained.
+- UPR ZX 4.6.1: GPL-3.0-or-later; installs `licenses/UPR-ZX-LICENSE.txt` and the upstream README. [Source tag](https://github.com/Ajarmar/universal-pokemon-randomizer-zx/tree/v4.6.1).
+- Temurin 8u504 ARM JRE: GPLv2 with Classpath exception and third-party notices. Complete `LICENSE`, `NOTICE`, `ASSEMBLY_EXCEPTION`, `THIRD_PARTY_README` and archive contents are retained. [Upstream release/source links](https://github.com/adoptium/temurin8-binaries/releases/tag/jdk8u504-b01).
+- DejaVu Sans 2.37: Bitstream Vera license; DejaVu additions are public domain. Installs `font.ttf`, `licenses/DejaVu-LICENSE.txt` and `licenses/DejaVu-AUTHORS.txt`.
+- Faster FireRed 1.3.2 IPS: downloaded from DrMaple and applied locally to the user's ROM. No general redistribution license was found. The patch is **not bundled** in this repository or release packages.
+
+## Windows installer runtime
+
+The EXE is packaged with PyInstaller and includes CPython, Tcl/Tk, OpenSSL and
+runtime dependencies. Applicable notices are in the release ZIP's
+`installer-licenses/` and embedded in the EXE. PyInstaller's GPL exception allows
+bundled applications to retain their own licenses. Packaging sources/references
+are in [SOURCES.md](SOURCES.md).
+
+## Supplied by the device / user
+
+Onion's gpSP core, SDL libraries, firmware libraries, the user's ROM and GBA BIOS
+are not distributed here. Releases contain no ROMs, BIOS or saves. Setup retains
+upstream notices and never downloads a ROM or BIOS.
+
+Pokémon and its game content/trademarks belong to their rights holders. This
+project is unaffiliated with Nintendo, Game Freak, The Pokémon Company, IronMON,
+the Tracker project or Onion.

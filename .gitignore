@@ -28,6 +28,17 @@
 !/tests/**
 !/settings.ini
 !/standard.rnqs
+!/install.py
+!/dependencies.json
+!/build_release.py
+!/INSTALL.md
+!/AI_USAGE.md
+!/CHANGELOG.md
+!/CONTRIBUTING.md
+!/docs/
+!/docs/**
+!/.github/
+!/.github/**
 *.gba
 *.srm
 *.state

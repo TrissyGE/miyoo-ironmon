@@ -82,7 +82,7 @@ dofile = function(path)
             drawBall()
         end
         TrackerScreen.Buttons.RerollBallPicker.onClick=function()
-            MiyooRules.notify('Starter wurde vorab ausgelost: kein Reroll.')
+            MiyooRules.notify('Starter assigned before selection: No reroll.')
         end
     elseif path:match('[/\\]TimeMachineScreen%.lua$') then
         TimeMachineScreen.createRestorePoint=function() end

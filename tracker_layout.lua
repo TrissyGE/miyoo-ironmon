@@ -46,7 +46,7 @@ function L.draw(Q,R)
     end
     local header=color('Header text',0xffffffff)
     text(gw+4,sideFooter,short(R.routeName(),19),11,header)
-    text(gw+4,sideFooter+13,R.routes[R.routeKey()] and 'Route verbraucht' or 'Fang / KO frei',11,
+    text(gw+4,sideFooter+13,R.routes[R.routeKey()] and 'Route used' or 'Catch / KO open',11,
         color(R.routes[R.routeKey()] and 'Intermediate text' or 'Positive text',0xffffffff))
     if not R.pending then
         for slot=1,6 do
@@ -61,7 +61,7 @@ function L.draw(Q,R)
         end
     end
     rect(0,466,640,14)
-    text(8,467,'#'..tostring(Main.currentSeed or 1)..'   Start: Du/Gegner   X: Cursor   L/R: Stat markieren   Select: Notizen   L2: Menue',10,header)
+    text(8,467,'#'..tostring(Main.currentSeed or 1)..'   Start: Own / Enemy   X: Cursor   L/R: Mark stats   Select: Notes   L2: Menu',10,header)
     if L.popup() and not Q.menu and not R.pending and not R.ended then
         if MiyooDialogs and MiyooDialogs.active then
             -- Forms and keyboard occupy the full logical 390x160 canvas.
@@ -76,7 +76,7 @@ function L.draw(Q,R)
             miyoo.panel(240,0,150,160,91,20,330,352)
         end
         rect(0,466,640,14)
-        text(8,467,'X: Cursor / Spielen   A: Klick   B: Zurueck   Select: Gegnernotizen',10,header)
+        text(8,467,'X: Cursor / Play   A: Click   B: Back   Select: Enemy notes',10,header)
     end
 end
 return L

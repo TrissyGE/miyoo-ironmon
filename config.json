@@ -2,5 +2,5 @@
   "label": "IronMON",
   "icon": "/mnt/SDCARD/Icons/Default/gba.png",
   "launch": "launch.sh",
-  "description": "FireRed Standard IronMON mit Tracker"
+  "description": "FireRed Standard IronMON with Tracker"
 }

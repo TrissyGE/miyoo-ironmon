@@ -1,0 +1,33 @@
+name: Bug report
+description: Report a problem with the handheld app or installer.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please use English. Do not upload ROMs, BIOS, saves or randomized-ROM logs.
+        The app has not been tested through every story event. Describe the location and action precisely, especially for rule enforcement or save problems.
+  - type: input
+    id: versions
+    attributes:
+      label: Device, Onion version and IronMON release
+      placeholder: Miyoo Mini Plus / Onion ... / IronMON 0.1.0
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: What happened and how to reproduce it
+      description: Include the game location, party/battle situation and buttons or actions immediately before the problem. For setup, include the host OS and error message.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshots or relevant log lines
+      description: Use data/frontend.log or data/cache-worker.log. Share only relevant lines and remove personal paths. Do not attach game files or randomizer spoiler logs.

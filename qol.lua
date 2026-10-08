@@ -101,32 +101,32 @@ function Q.draw()
     if Q.messageUntil>miyoo.frame() then rect(8,283,464,32,0xff30261a);txt(16,289,short(Q.message,51),16,0xffffcf83) end
     if r.starterSlot and not r.starterLogged and not Q.menu then
         rect(8,8,360,28,0xff30261a)
-        txt(16,12,'Ausgeloster Starter: '..({'LINKS','MITTE','RECHTS'})[r.starterSlot],18,0xffffcf83)
+        txt(16,12,'Assigned starter: '..({'LEFT','MIDDLE','RIGHT'})[r.starterSlot],18,0xffffcf83)
     end
     local own=TrackerAPI.getPlayerPokemon() or {}
     if (own.stats or {}).hp and own.curHP>0 and own.curHP<=own.stats.hp//4 then
-        rect(8,8,115,26,0xff5a2128);txt(16,11,'WENIG HP',16,0xffffbaba)
+        rect(8,8,115,26,0xff5a2128);txt(16,11,'LOW HP',16,0xffffbaba)
     elseif own.status==2 or own.status==6 then
-        rect(8,8,150,26,0xff4f245e);txt(16,11,'VERGIFTET',16,0xffe3bbff)
+        rect(8,8,150,26,0xff4f245e);txt(16,11,'POISONED',16,0xffe3bbff)
     end
     if r.pending then
-        box(35,100,410,125);txt(55,117,'Fang behalten?',23)
-        txt(55,151,'Vor der Entscheidung bleiben Werte verborgen.',16)
-        txt(55,188,'A: Behalten       B: Ungesehen einlagern',17,0xff74cbd7)
+        box(35,100,410,125);txt(55,117,'Keep this catch?',23)
+        txt(55,151,'Stats stay hidden until you decide.',16)
+        txt(55,188,'A: Keep       B: Discard unseen',17,0xff74cbd7)
     elseif r.ended then
-        box(20,90,445,135);txt(40,105,'RUN BEENDET',24,theme('Negative text',0xffffa4a4))
-        txt(40,145,short(r.reason or 'Team verloren',47),17)
-        txt(40,184,'A+B+Start 2 Sekunden: Neuer Seed',18)
+        box(20,90,445,135);txt(40,105,'RUN ENDED',24,theme('Negative text',0xffffa4a4))
+        txt(40,145,short(r.reason or 'Team wiped',47),17)
+        txt(40,184,'Hold A+B+Start 2 seconds: New seed',18)
     elseif Q.menu then
         box(30,32,420,260);txt(50,44,'MIYOO IRONMON',22,theme('Header text',0xffffffff))
-        local labels={'Weiterspielen','Tempo: '..(Q.settings.fast_forward=='hold' and 'R2 halten' or 'R2 umschalten'),'Run-Verlauf','Tasten / Hilfe','Neuer Seed'}
+        local labels={'Continue','Speed: '..(Q.settings.fast_forward=='hold' and 'Hold R2' or 'Toggle R2'),'Run history','Controls / help','New seed'}
         for i,s in ipairs(labels) do
             local selected=i==Q.selection;local background=theme('Upper box border',0xff304b63)
             if selected then rect(43,75+i*32,389,28,background) end
             local brightness=((background>>16)&255)*299+((background>>8)&255)*587+(background&255)*114
             txt(53,78+i*32,s,20,selected and (brightness>128000 and 0xff111111 or 0xffffffff) or nil)
         end
-        if Q.help then rect(34,300,440,156);txt(47,311,'X: Tracker / Cursor  |  Y: Ansicht',17);txt(47,341,'R2: Tempo  |  L2: Menue  |  MENU: Speichern',16);txt(47,371,'Reset: A+B+Start 2 Sekunden halten',17);txt(47,402,'Standard: Teamverlust beendet den Run',16) end
+        if Q.help then rect(34,300,440,156);txt(47,311,'X: Tracker cursor  |  Y: Layout',17);txt(47,341,'R2: Speed  |  L2: Menu  |  MENU: Save / exit',16);txt(47,371,'Reset: Hold A+B+Start for 2 seconds',17);txt(47,402,'Standard: A team wipe ends the run',16) end
         if Q.history then
             rect(32,300,445,166);local f=io.open('../data/history.tsv','r');local list={}
             if f then for line in f:lines() do list[#list+1]=line end f:close() end
@@ -134,9 +134,9 @@ function Q.draw()
         end
     end
     if r.unstableReported and not Q.menu and not r.ended and not r.pending then
-        box(20,90,445,135);txt(40,105,'DATENPRUEFUNG: ANGEHALTEN',21)
-        txt(40,145,'Ungueltige Pokemon-Daten. Kein Run-Verlust.',16)
-        txt(40,184,'L2: Menue / neuer Seed   MENU: Schliessen',16)
+        box(20,90,445,135);txt(40,105,'DATA CHECK: PAUSED',21)
+        txt(40,145,'Invalid Pokemon data. No run loss.',16)
+        txt(40,184,'L2: Menu / new seed   MENU: Exit',16)
     end
 end
 Q.load()

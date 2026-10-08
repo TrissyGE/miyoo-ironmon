@@ -131,12 +131,46 @@ assert(R.pending and R.pending.species==25 and not R.routes[88] and paused,'real
 R.keepCapture();assert(R.routes[88] and not R.pending and not paused)
 Battle.inBattleScreen=true;w8(GameSettings.gBattleOutcome,0);R.update()
 Battle.inBattleScreen=false;w8(GameSettings.gBattleOutcome,1);R.update()
-assert(R.ended and R.reason=='Regelbruch: Zweiter Wild-KO an diesem Ort.','real second KO was exempted')
+assert(R.ended and R.reason=='Rule broken: Second wild KO at this location.','real second KO was exempted')
 -- Unexplained real catches retain the original fail-closed behavior.
 R.ended=false;paused=false;R.routes={}
 Battle.inBattleScreen=true;w8(GameSettings.gBattleOutcome,0);R.update()
 Battle.inBattleScreen=false;w8(GameSettings.gBattleOutcome,7);R.update()
-assert(R.ended and R.reason=='Fangdaten unklar: Run angehalten.','unknown real catch was exempted')
+assert(R.ended and R.reason=='Catch data unclear: Run stopped.','unknown real catch was exempted')
+-- The mandatory unveiled Tower ghost is a story KO, including on a used route.
+-- Unlike the tutorial, real damage/death and stolen-item guards must still run.
+for _,usedBefore in ipairs({false,true}) do
+    R.ended=false;paused=false;R.battle=nil;R.pending=nil;R.dead={};R.rejected={};R.routes={[88]=usedBefore or nil}
+    for slot=1,5 do for offset=0,99 do w8(GameSettings.pstats+slot*100+offset,0) end end
+    w8(GameSettings.gPlayerPartyCount,1);mon(0,48,19,20,0)
+    Battle.inBattleScreen=true;w32(GameSettings.gBattleTypeFlags,0xa000);w8(GameSettings.gBattleOutcome,0);R.update()
+    assert(R.battle and R.battle.storyGhost,'mandatory ghost not recognized')
+    Battle.inBattleScreen=false;w8(GameSettings.gBattleOutcome,1);R.update()
+    assert(not R.ended and not paused and not R.pending,'mandatory story KO stopped play')
+    assert(not not R.routes[88]==usedBefore,'story KO changed route availability')
+end
+-- Identification may arrive after the first tracker frame and clear before exit.
+R.routes={};Battle.inBattleScreen=true;w32(GameSettings.gBattleTypeFlags,0x8000);w8(GameSettings.gBattleOutcome,0);R.update()
+assert(R.battle and not R.battle.storyGhost,'ordinary unidentified ghost was exempted')
+w32(GameSettings.gBattleTypeFlags,0xa000);R.update();assert(R.battle.storyGhost,'late ghost flag was missed')
+Battle.inBattleScreen=false;w32(GameSettings.gBattleTypeFlags,0);w8(GameSettings.gBattleOutcome,1);R.update()
+assert(not R.ended and not R.routes[88],'cleared ghost flag lost story exception')
+-- A reused legendary bit, ordinary ghost or ordinary wild KO still violates.
+for _,flags in ipairs({0,0x2000,0x8000,0x20000}) do
+    R.ended=false;paused=false;R.battle=nil;R.routes={[88]=true}
+    Battle.inBattleScreen=true;w32(GameSettings.gBattleTypeFlags,flags);w8(GameSettings.gBattleOutcome,0);R.update()
+    Battle.inBattleScreen=false;w8(GameSettings.gBattleOutcome,1);R.update()
+    assert(R.ended and paused,'normal encounter bypassed second-KO rule: '..flags)
+end
+-- Stale story flags in the field do not suppress normal held-item guards.
+R.ended=false;paused=false;R.dead={};R.rejected={};R.battle=nil
+w32(GameSettings.gBattleTypeFlags,0xa000);local storyMon,storyGrowth=mon(0,48,19,20,197);R.update()
+assert((r32(storyGrowth)~48~0x12345678)>>16==0,'story flags disabled field item guard')
+-- Losing the mandatory ghost fight is still a genuine Standard team wipe.
+Battle.inBattleScreen=true;w8(GameSettings.gBattleOutcome,0);w16(storyMon+86,0);R.update()
+assert(R.ended and paused and R.dead[string.format('%08x:%08x',48,0x12345678)],'story ghost exempted a real death')
+Battle.inBattleScreen=false;w32(GameSettings.gBattleTypeFlags,0)
+print('PASS: mandatory Tower ghost used/unused routes, flag races, ordinary encounters and real deaths')
 -- Model the actual frame-boundary failure: game functions temporarily decrypt
 -- records and update count/slots in separate instructions. Guards must wait.
 local coreFrame=0

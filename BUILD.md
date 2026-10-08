@@ -1,8 +1,8 @@
 # Native Miyoo port
 
-This personal port uses the unmodified upstream Ironmon Tracker 9.4.0 release. `bootstrap.lua` adapts emulator APIs and lifecycle behavior. `forms.lua` renders popup controls and a mouse-operated keyboard on the handheld. `ironmon` is an ARMv7 hard-float executable; `ironmon.c` is its source.
+This port uses the unmodified upstream Ironmon Tracker 9.4.0 release. `bootstrap.lua` adapts emulator APIs and lifecycle behavior. `forms.lua` renders popup controls and a mouse-operated keyboard on the handheld. `ironmon` is an ARMv7 hard-float executable; `ironmon.c` is its source.
 
-The installed directory is `/mnt/SDCARD/App/IronMON`. The source archive only contains this port's program/configuration files, headers and build scripts. It is not a complete standalone installer. Back up the whole installed directory for restoration.
+The installed directory is `/mnt/SDCARD/App/IronMON`. The source archive only contains this port's program/configuration files, headers and build scripts. End users should use the guided release installer described in [INSTALL.md](INSTALL.md); source archives are for development.
 
 Build requirements:
 
@@ -32,8 +32,38 @@ uses `source-qol.gba` only for new seeds. Dependencies and sources are listed in
 
 The installed app also needs the original Tracker 9.4.0 in `tracker/`,
 UPR ZX 4.6.1 as `PokeRandoZX.jar`, ARM Temurin 8u504 JRE in `runtime/`, and a
-locally licensed font as `font.ttf`. The core and BIOS use Onion's normal paths.
+DejaVu Sans 2.37 as `font.ttf` (with its license retained). The core and BIOS use Onion's normal paths.
 These dependencies are deliberately excluded from the repository and source ZIP.
+
+## Release packages
+
+After building `ironmon`, place the original Lua 5.4.8 source archive at
+`lua.tar.gz`. The source release includes it as `third-party/lua-5.4.8.tar.gz`
+alongside the port's corresponding source. It is not a game dependency.
+
+```sh
+python3 build_release.py
+```
+
+This creates the prebuilt Python installer ZIP, source ZIP and SHA256SUMS.txt.
+`--payload-only` builds `payload/` for testing `install.py` from a checkout.
+The payload manifest records hashes and the Git revision; official releases are
+packaged from a clean release commit. No ROM, BIOS, IPS patch or save is packaged.
+
+Build the Windows installer on Windows with CPython 3.11 and **PyInstaller 6.22.0**:
+
+```powershell
+python -m pip install PyInstaller==6.22.0
+python build_release.py --windows --output release
+```
+
+This also creates the standalone EXE and Windows ZIP. Keep the actual embedded
+runtime's notices in `docs/installer-licenses/`; the checked-in notices describe
+the runtime used for 0.1.0. Review them if changing the Python distribution.
+The EXE's guarded packaging check can be run with
+`IronMON-Setup.exe --self-test --report result.json`; it verifies the payload and
+creates/closes the Tk UI. A successful self-test does not replace installation
+and real-device checks.
 
 ## Tests
 
@@ -44,6 +74,14 @@ that installation's `tracker/` directory. This suite substitutes fake memory and
 file IO and checks encrypted Pokemon records, all 24 substructure permutations,
 dead-item removal, party compaction, resurrection, exact purchase reversal and
 Standard route/shiny/capture policy. Never run real emulation QA against user saves.
+
+Host tests use synthetic ROM/BIOS bytes and local dependency fixtures, so they
+need no game files or network downloads. Installer scenarios cover fresh setup,
+updates retaining the current run and notes, complete backups, final-swap rollback,
+corrupt downloads/payloads, wrong inputs, unsafe archives and FAT32-compatible
+Java links. A changed prepared ROM base invalidates reserve seeds while retaining
+the current run. GitHub Actions runs these tests on Windows and Linux; it does
+not build the device executable or run copyrighted game fixtures.
 
 The rule suite also checks Old Man tutorial entry/exit flag races, field guards
 after a persistent tutorial flag, actual capture confirmation and second-KO
@@ -62,6 +100,15 @@ emulator runs, so cursor/UI pauses cannot trigger the persistent-data timeout.
 enemy naturally KO a one-HP lead, switches, wins and verifies graveyard integrity.
 Require the explicit PASS line; the Tracker can catch bootstrap assertions even
 when the frontend's process exit code is zero.
+
+`tests/ghost_resume.lua` requires `IRONMON_GHOST_QA=1`, the isolated QA marker,
+and a repaired copy of a won mandatory Tower ghost checkpoint on a used route.
+It closes the original story messages with real A inputs and checks natural
+story completion, unchanged encounter records and a playable overworld.
+The rule suite separately checks the mandatory ghost on used/unused routes,
+late/cleared flags, normal wild/legendary/scripted encounters and actual deaths.
+Only the combined GHOST and GHOST_UNVEILED flags exempt a winning story KO;
+party, death, capture and stolen-item guards remain active.
 
 `launch.sh --prepare-cache` creates two distinct randomized ROMs, each with its
 own emulated lab state after Mom's event. The launcher verifies the ROM hash

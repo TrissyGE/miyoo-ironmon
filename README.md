@@ -1,93 +1,124 @@
+<div align="center">
+
 # Miyoo IronMON
 
-Eigenständiges ARM-Frontend für **FireRed Standard IronMON auf Miyoo Mini Plus**.
-Es verbindet den vorhandenen gpSP-Core mit dem originalen Ironmon-Tracker 9.4.0,
-Lua 5.4 und einer expliziten Tracker-API-Anpassung. Spielen, Tracken und
-Randomisieren funktionieren auf dem Gerät ohne PC oder Netzwerk.
+**FireRed Standard IronMON. Original Tracker. Everything on your handheld.**
 
-## Funktionen
+[![Release](https://img.shields.io/github/v/release/TrissyGE/miyoo-ironmon?include_prereleases)](https://github.com/TrissyGE/miyoo-ironmon/releases/latest)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue)](LICENSE)
+[![Device](https://img.shields.io/badge/Miyoo-Mini%20Plus-ffcf83)](INSTALL.md)
+[![AI disclosure](https://img.shields.io/badge/AI%20assisted-disclosed-9b8afb)](AI_USAGE.md)
 
-- Neue Seeds mit Faster FireRed 1.3.2, übersprungenem Oak-Intro und festen Namen.
-- Zwei vorbereitete Seeds: jeder mit eigenem, geprüftem Laborzustand nach Mom.
-- Spiel mit 512×342 Pixeln, etwa 14 % mehr Fläche als im ersten QoL-Layout.
-  Die echten Original-Panels werden rechts und unten angeordnet: Name/Item/Fähigkeit
-  und Stats rechts; Attackentabelle, Sprite/Typen, Heals und Carousel darunter.
-- Originalgrafiken und Themes, Gegner-Markierungen und vermutete Fähigkeiten,
-  eigene Werte samt Stat-Stufen, PP/Stärke/Genauigkeit und Original-Detailseiten.
-  Start wechselt wie im Original zwischen eigenem Pokémon und Gegner.
-- Originaler Tracker samt Notizen, Tastatur und Einstellungsseiten ist direkt in
-  dieser Ansicht bedienbar. Native QoL-Menüs übernehmen die Tracker-Farben.
-- R2-Tempo wahlweise halten oder umschalten. HP-/Giftwarnung und geschützter Reset.
-- Auto-Save/Resume, Run-Verlauf und standardmäßig acht abgeschlossene Run-Backups.
-- Permanente Todesliste mit Einlagerung nach dem Kampf und Vernichtung des
-  getragenen Items; Zurückholen/Heilen reaktiviert tote Pokémon nicht.
-  Transfers warten auf die Spielwelt, damit offene PC-/Team-Menüs gültig bleiben.
-- Pokémon-Schreibzugriffe prüfen Verschlüsselung/Checksumme; vorübergehend
-  entschlüsselte Datensätze und unvollständige Teamumsortierungen werden abgewartet.
-  Ein dauerhaft ungültiger Zustand pausiert technisch und zählt nicht als Niederlage.
-- Standard-Game-Over bei Verlust des ganzen Teams. Retry und Time Machine gesperrt.
-- Ein Fang ODER Wild-KO pro Ort über alle Etagen/Methoden hinweg; Shiny-KO zusätzlich.
-- Vertanias Fangdemo wird über FireReds Tutorial-Kampfkennzeichen ausgenommen;
-  sie verbraucht keinen Encounter und löst keine Fangbestätigung oder Runsperre aus.
-- Neuer Fang kann ungesehen verworfen werden. Scouts dürfen weiterhin Bälle werfen.
-- Shops bieten nur Bälle und Repels; Automaten/Barter haben zusätzliche Inventarprüfungen.
-- Lucky Egg/Sacred Ash und VS Seeker gesperrt; gehaltene Bans im Labor erlaubt.
-- Zufallsstarter wird vor der Wahl ausgelost; Favoriten können konfiguriert werden.
-- Trainer-Revanchen und wiederholt eingesammelte versteckte Items werden gesperrt.
-- Der optionale Viridian-Freundschaftsbonus des Faster-Patches wird zurückgenommen.
+[**Download & install**](https://github.com/TrissyGE/miyoo-ironmon/releases/latest) Â· [Installation guide](INSTALL.md) Â· [Controls](#controls) Â· [Sources & credits](SOURCES.md)
 
-**Regelsperren:** Ein zweiter unerlaubter Wild-KO oder eine unerlaubte Starterwahl
-beendet den Run mit Begründung. Das Spiel wird nicht unbemerkt zurückgespult.
-Legale Fänge auf bereits verbrauchten Routen werden ungesehen verworfen.
-Gegnerdaten zeigen nur das, was der originale Tracker bereits kennt.
+![FireRed battle and original Tracker adapted to the Miyoo](docs/images/battle-own.png)
 
-## Tasten
+</div>
 
-| Taste | Funktion |
+Play, track, randomize and reset directly on a **Miyoo Mini Plus running Onion OS**.
+An ARM frontend connects Onion's gpSP core to the **original Ironmon Tracker 9.4.0**,
+with handheld controls, rearranged panels and Standard rule guards. Once installed,
+you can play without a PC, Wi-Fi, Raspberry Pi or server.
+
+## Get playing
+
+1. Download **IronMON-Setup-Windows.zip** from the [latest release](https://github.com/TrissyGE/miyoo-ironmon/releases/latest) and extract it.
+2. Shut down your Miyoo and connect its Onion SD card to your computer. Run **IronMON-Setup.exe**, select the SD card and your own **unmodified FireRed USA Rev 1** ROM. Select your GBA BIOS if it is not already on the card.
+3. Click **Install IronMON**, safely eject the card, then open **Apps â†’ IronMON**. The first launch prepares a seed; allow about 1â€“2 minutes.
+
+No compilation, SSH, Python or host Java is needed for the Windows installer.
+It downloads pinned upstream dependencies, checks their hashes, prepares your ROM
+locally, and backs up an existing app before replacing it. Runs, notes and settings
+are preserved. [Full instructions, updates and the Python option â†’](INSTALL.md)
+
+Tested on **Miyoo Mini Plus / Onion v4.4.0-beta-20260120-07505ea5**.
+Other Onion versions and the original Miyoo Mini have not been verified.
+Releases contain no ROMs, BIOS files or saves; the installer never uploads them.
+
+## Built for the Miyoo
+
+- **More room for the game:** 512Ã—342 by default, original Tracker panels to the right and underneath. Switch to exact 2Ã— scaling, a large game view, or the complete original layout.
+- **Familiar tracking:** original sprites, themes, move details, PP, stat stages, enemy stat markings, suspected abilities, notes, settings and an on-screen keyboard. Start switches between your PokÃ©mon and the enemy.
+- **Quick resets:** Faster FireRed 1.3.2, Oak intro skip, fixed names and two background-prepared seeds, each with a verified lab checkpoint after Mom. An empty cache needs time to refill.
+- **Handheld conveniences:** hold/toggle fast forward, low-HP and poison warnings, a protected reset shortcut, autosave/resume, run history and eight completed-run backups by default.
+- **Safer party handling:** encrypted records and checksums are checked before edits. Temporary party transitions are allowed to settle; persistent invalid data pauses play without recording a loss.
+
+| Your PokÃ©mon and stat stages | Enemy tracking and markings |
 | --- | --- |
-| A / B / D-Pad / Select | Spiel |
-| Start | Im Kampf: eigenes Pokémon / Gegner umschalten |
-| X | Cursor in der aktuellen Ansicht; D-Pad bewegt, A klickt |
-| L / R | Gegner-Stat auswählen / markieren; auch im Cursor-Modus |
-| Select im Cursor-Modus | Original-Notizfenster für den Gegner, inklusive Fähigkeiten |
-| B im Cursor-Modus | Detailseite oder Dialog verlassen |
-| Y | 512×342 + Tracker → pixelgenau 480×320 + Tracker → großes Spiel → Originalgesamtansicht |
-| L2 | Miyoo-Menü; D-Pad wählt, A bestätigt, B schließt |
-| R2 | Tempo halten oder umschalten; Einstellung im L2-Menü |
-| MENU | Speichern und schließen |
-| A+B+Start, zwei Sekunden halten | Neuer Run; erst nach dem ersten Kampf |
+| ![Own PokÃ©mon stats](docs/images/battle-own.png) | ![Enemy tracking](docs/images/battle-enemy.png) |
+| **Suspected abilities and notes** | **Handheld menu and controls** |
+| ![Original enemy notes window](docs/images/notes.png) | ![Miyoo menu](docs/images/menu.png) |
 
-Die GBA-Tasten L/R und die bisherigen Tracker-Kürzel bleiben verfügbar.
-Der Cursor pausiert das Spiel. Stat-Markierungen und Fähigkeitsnotizen werden
-in den originalen Tracker-Daten gespeichert. Informations- und Einstellungsseiten
-erscheinen vollständig als vergrößerte Fenster. Timer-/Repel-Einblendungen des
-Originals bleiben erhalten. Der Ball-Picker zeigt die regelkonforme Starterwahl.
+These are actual frames from an isolated installation on the Miyoo using the real
+gpSP core. They are not interface mockups.
 
-## Daten und Voraussetzungen
+## Standard rules, with guardrails
 
-Für den Aufbau: eigener unmodifizierter USA-FireRed-Rev-1-Dump, GBA-BIOS,
-Onion/gpSP, Tracker 9.4.0, UPR ZX 4.6.1, Temurin ARM-JRE 8u504, ein lokal
-lizenziertes TTF und die Gerätebibliotheken. Dieses Repository enthält keine ROM.
-[BUILD.md](BUILD.md) beschreibt den Build; [SOURCES.md](SOURCES.md) verlinkt
-alle verwendeten Quellen. [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
-enthält die Lizenzhinweise.
+This release targets [**Standard IronMON**](https://gist.github.com/valiant-code/adb18d248fa0fae7da6b639e2ee8f9c1#standard-ironmon-ruleset).
+Read the rules before playing; automation does not replace player responsibility.
+A complete story playthrough has not been regression-tested.
 
-`data/current.*` ist der laufende Run, `data/current.rules` die unabhängige
-Regeldatei. `data/history.tsv` ist der Verlauf, `data/runs/` enthält vergangene
-Runs. Die Backups sind zur Datenrettung gedacht. Die Oberfläche bietet im
-Standard-Modus keinen Rücksprung in einen abgeschlossenen Run.
+- One catch **or** wild KO per location, shared across floors and methods; the additional shiny-KO exception is supported.
+- New catches can be discarded before stats are shown. Scouts may throw balls; catches on used routes are discarded unseen.
+- Death is permanent. Fainted PokÃ©mon lose their held item and move to the last available PC boxes once the battle and menus finish. Healing cannot reactivate them.
+- The run ends when the **entire team** faints. A single faint with a living teammate does not end Standard. Retry and Time Machine are disabled.
+- Shops contain balls and Repels only. Extra purchase/barter guards, banned-item removal, trainer-rematch protection and hidden-item repeat protection are included.
+- A starter is assigned before selection. Up to three favourites, including at most one legendary, can be configured in `settings.ini` using Gen 3 internal species IDs.
+- Viridian's catching demonstration and the mandatory Tower ghost consume no encounter. The ghost still obeys normal death/item guards. Faster FireRed's optional friendship bonus is disabled.
 
-`settings.ini`: Namen/Geschlecht für die Basis-Erstellung, interne Gen-3-IDs der
-Favoriten, Tempo-Modus und Anzahl der Backups. Namen ändern erfordert eine neue
-QoL-Basis und neu vorbereitete Seeds. Eine bereits laufende ROM wird beim Update
-nicht gepatcht. Vollständig protokollierte Regeln beginnen mit dem nächsten Seed.
+A forbidden second wild KO, starter choice or trainer rematch stops the run with
+a reason. Existing runs retain their data; earlier encounters never recorded by
+an older version cannot be reconstructed. This release is not a Kaizo ruleset.
 
-Der Seed-Cache läuft mit niedriger CPU-Priorität. Sind beide Reserven aufgebraucht,
-muss der nächste Reset auf die Vorbereitung warten. Ein unerwarteter Stromausfall
-kann seit dem letzten Auto-Save Spielzeit kosten; normal mit MENU schließen.
+## Controls
 
-Dies ist ein getesteter erster QoL-Stand. Die normalen Shoplisten sind in der
-ROM gefiltert; Sonderkäufe werden zusätzlich über Inventar-/Geldänderungen erkannt.
-Nicht jeder Story-Sonderfall ist in einem vollständigen Durchlauf geprüft.
-Fehler mit Ort, Aktion und `data/frontend.log` melden. Bei älteren Runs kennt das
-neue Routenprotokoll frühere Wild-KOs/Fänge noch nicht.
+| Button | Action |
+| --- | --- |
+| A / B / D-pad / Select | Game controls |
+| Start | In battle: switch own PokÃ©mon / enemy |
+| X | Toggle Tracker cursor; D-pad moves, A clicks; game pauses |
+| L1 / R1 | Select / mark enemy stat; also works in cursor mode |
+| Select in cursor mode | Enemy notes and suspected abilities |
+| B in cursor mode | Close dialog or return from details |
+| Y | Default 512Ã—342 â†’ exact 480Ã—320 â†’ large game â†’ original layout |
+| L2 | Handheld menu; D-pad selects, A confirms, B closes |
+| R2 | Hold fast forward; choose toggle mode in the L2 menu |
+| MENU | Save and exit |
+| Hold A+B+Start for 2 seconds | New seed; protected until the first battle is played |
+
+Original detail/settings pages open as enlarged windows. Stat markings and notes
+use the Tracker's own save format. Timer and Repel overlays remain available.
+This custom emulator-API adapter does not fully reproduce desktop file pickers
+or external integrations, and does not claim complete BizHawk feature parity.
+
+## Data, support and development
+
+`App/IronMON/data/current.*` is the current run; `current.rules` stores the rule
+journal, `history.tsv` the history, and `data/runs/` completed backups.
+MENU exit saves immediately; autosave runs every minute. Sudden power loss can
+lose progress since the last save. Backups are for recovery; Standard offers
+no in-game rewind to completed runs.
+
+For bugs, include the location, action, release/Onion versions and relevant lines
+from `data/frontend.log` or `data/cache-worker.log`. Do not attach ROMs, BIOS,
+saves or randomized-ROM logs. [Report a bug â†’](https://github.com/TrissyGE/miyoo-ironmon/issues/new/choose)
+
+[Build & test](BUILD.md) Â· [Contributing](CONTRIBUTING.md) Â· [Changelog](CHANGELOG.md)
+
+## Credits, licensing and AI use
+
+The original Tracker is by [besteon and contributors](https://github.com/besteon/Ironmon-Tracker).
+Randomization uses [UPR ZX](https://github.com/Ajarmar/universal-pokemon-randomizer-zx),
+QoL preparation uses [DrMaple's Faster FireRed](https://github.com/DrMaple/Faster-FireRed)
+and an adapted intro routine, and emulation uses Onion's [gpSP](https://github.com/libretro/gpsp).
+[All sources, pinned versions and research references â†’](SOURCES.md)
+
+**This project's custom code was substantially developed with OpenAI Codex.**
+AI wrote much of the frontend, adapter, rule guards, installer, tests and documentation.
+The human owner directed the design and tested on real hardware. The scope and
+validation limits are disclosed in [AI_USAGE.md](AI_USAGE.md).
+
+The custom port is **GPL-3.0-only**. Upstream components retain their own licenses;
+see [LICENSE](LICENSE) and [third-party notices](THIRD_PARTY_NOTICES.md).
+An unofficial community project, unaffiliated with Nintendo, Game Freak,
+The PokÃ©mon Company, IronMON, the Tracker project or Onion.

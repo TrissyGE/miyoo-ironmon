@@ -1,0 +1,32 @@
+{
+  "tracker": {
+    "file": "Ironmon-Tracker-9.4.0.zip",
+    "url": "https://github.com/besteon/Ironmon-Tracker/releases/download/v9.4.0/Ironmon-Tracker.zip",
+    "sha256": "7b22dc7a2802e8a2138df046e126730a7195f6d87638d9cfbd02d3160b6899f8"
+  },
+  "randomizer": {
+    "file": "PokeRandoZX-v4_6_1.zip",
+    "url": "https://github.com/Ajarmar/universal-pokemon-randomizer-zx/releases/download/v4.6.1/PokeRandoZX-v4_6_1.zip",
+    "sha256": "26051fe8a6665ea0582dfcd4d1c3e4889da42a2f731f5fc530fff0cb691a43fd"
+  },
+  "randomizer_license": {
+    "file": "UPR-ZX-LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/Ajarmar/universal-pokemon-randomizer-zx/v4.6.1/LICENSE.txt",
+    "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+  },
+  "java": {
+    "file": "OpenJDK8U-jre_arm_linux_hotspot_8u504b01.tar.gz",
+    "url": "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u504-b01/OpenJDK8U-jre_arm_linux_hotspot_8u504b01.tar.gz",
+    "sha256": "8ca828acbe5f5b021e14a7ee67c6af36bd0ac50681f1ccdd62352afab947e9cb"
+  },
+  "font": {
+    "file": "dejavu-sans-ttf-2.37.zip",
+    "url": "https://github.com/dejavu-fonts/dejavu-fonts/releases/download/version_2_37/dejavu-sans-ttf-2.37.zip",
+    "sha256": "5c6e497a2f36552cb5ffb112c413a6af39c0f3c47653662b90b4fa6499822fd7"
+  },
+  "patch": {
+    "file": "Faster.FireRed.1.3.2.ips",
+    "url": "https://github.com/DrMaple/Faster-FireRed/releases/download/1.3.2/Faster.FireRed.1.3.2.ips",
+    "sha256": "44bd14d40c255527110cb8c16281ef84cac1f42ef3fd6ceab1d9215a075d1218"
+  }
+}

@@ -376,12 +376,14 @@ static void hash_rom(void){char cmd[1200];snprintf(cmd,sizeof(cmd),"sha1sum '%s'
 static void stop_signal(int sig){(void)sig;running=0;}
 int main(int argc,char**argv){
     if(argc<3){fprintf(stderr,"Usage: ironmon CORE ROM [TEST_FRAMES]\n");return 2;}setvbuf(stdout,NULL,_IOLBF,0);
+    int status_only=strcmp(argv[1],"--status")==0;
     strncpy(rom_path,argv[2],sizeof(rom_path)-1);const char*name=strrchr(rom_path,'/');strncpy(rom_name,name?name+1:rom_path,sizeof(rom_name)-1);char*ext=strrchr(rom_name,'.');if(ext)*ext=0;
     if(argc>3)test_frames=atoi(argv[3]);
     const char*qa=getenv("IRONMON_QA_FRAMES");if(qa)qa_frames=atoi(qa);
     signal(SIGTERM,stop_signal);signal(SIGINT,stop_signal);signal(SIGHUP,stop_signal);
     if(argc>4){replay=fopen(argv[4],"r");if(replay)replay_pending=fscanf(replay,"%lu %x",&replay_frame,&replay_keys)==2;}
-    FILE*f=fopen(rom_path,"rb");if(!f){perror(rom_path);return 2;}fseek(f,0,SEEK_END);rom_size=ftell(f);rewind(f);rom_data=malloc(rom_size);if(!rom_data||fread(rom_data,1,rom_size,f)!=rom_size){fclose(f);return 2;}fclose(f);hash_rom();
+    FILE*f=NULL;
+    if(!status_only){f=fopen(rom_path,"rb");if(!f){perror(rom_path);return 2;}fseek(f,0,SEEK_END);rom_size=ftell(f);rewind(f);rom_data=malloc(rom_size);if(!rom_data||fread(rom_data,1,rom_size,f)!=rom_size){fclose(f);return 2;}fclose(f);hash_rom();}
     if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO|SDL_INIT_TIMER)<0){fprintf(stderr,"SDL init %s\n",SDL_GetError());return 2;}
     output=SDL_SetVideoMode(640,480,32,SDL_SWSURFACE);if(!output){fprintf(stderr,"Video mode %s\n",SDL_GetError());return 2;}
     /* Firmware GFX scan-out expects a 32-bit framebuffer. Keep all scaling in
@@ -389,6 +391,22 @@ int main(int argc,char**argv){
     screen=SDL_CreateRGBSurface(SDL_SWSURFACE,640,480,16,0xF800,0x07E0,0x001F,0);SDL_ShowCursor(SDL_DISABLE);TTF_Init();
     presentation=SDL_CreateRGBSurface(SDL_SWSURFACE,640,480,16,0xF800,0x07E0,0x001F,0);
     canvas=SDL_CreateRGBSurface(SDL_SWSURFACE,390,160,16,0xF800,0x07E0,0x001F,0);SDL_FillRect(canvas,NULL,0);
+    if(status_only){
+        Uint32 status_start=SDL_GetTicks();
+        while(running){
+            SDL_Event e;while(SDL_PollEvent(&e))if(e.type==SDL_QUIT)running=0;
+            SDL_FillRect(screen,NULL,SDL_MapRGB(screen->format,18,23,32));
+            text_at(screen,42,156,"MIYOO IRONMON",0xFFFFFFFF,28);
+            text_at(screen,42,211,argv[2],0xFFFFCF83,20);
+            text_at(screen,42,254,"The first seed may take 1-2 minutes.",0xFFDDDDDD,18);
+            text_at(screen,42,287,"Keep your Miyoo powered on.",0xFFDDDDDD,18);
+            char elapsed[96];snprintf(elapsed,sizeof(elapsed),"Preparing on device... %u seconds",(SDL_GetTicks()-status_start)/1000);
+            text_at(screen,42,345,elapsed,0xFFAAAAAA,16);present();
+            if(qa_frames&&++frames>=(unsigned)qa_frames){SDL_SaveBMP(screen,"../test.bmp");running=0;}
+            SDL_Delay(100);
+        }
+        SDL_Quit();return 0;
+    }
     keymap[RETRO_DEVICE_ID_JOYPAD_A]=SDLK_SPACE;keymap[RETRO_DEVICE_ID_JOYPAD_B]=SDLK_LCTRL;keymap[RETRO_DEVICE_ID_JOYPAD_START]=SDLK_RETURN;keymap[RETRO_DEVICE_ID_JOYPAD_SELECT]=SDLK_RCTRL;keymap[RETRO_DEVICE_ID_JOYPAD_UP]=SDLK_UP;keymap[RETRO_DEVICE_ID_JOYPAD_DOWN]=SDLK_DOWN;keymap[RETRO_DEVICE_ID_JOYPAD_LEFT]=SDLK_LEFT;keymap[RETRO_DEVICE_ID_JOYPAD_RIGHT]=SDLK_RIGHT;keymap[RETRO_DEVICE_ID_JOYPAD_L]=SDLK_e;keymap[RETRO_DEVICE_ID_JOYPAD_R]=SDLK_t;keymap[RETRO_DEVICE_ID_JOYPAD_R2]=SDLK_BACKSPACE;
     keymap[RETRO_DEVICE_ID_JOYPAD_L2]=SDLK_TAB;
     load_core(argv[1]);struct retro_game_info info={rom_path,rom_data,rom_size,NULL};if(!r_load_game(&info)){fprintf(stderr,"Game load failed\n");return 2;}
@@ -411,6 +429,6 @@ int main(int argc,char**argv){
     call_void("MiyooRules","save");
     if(exit_ref!=LUA_NOREF){lua_rawgeti(vm,LUA_REGISTRYINDEX,exit_ref);if(lua_pcall(vm,0,0,0)!=LUA_OK)fprintf(stderr,"Exit hook: %s\n",lua_tostring(vm,-1));}
     if(!test_frames){save_ram();save_state("../data/current.state");}
-    if(!test_frames&&exit_code==42){SDL_FillRect(screen,NULL,0);text_at(screen,120,190,"Neuer IronMON-Run wird erzeugt...",0xFFFFFFFF,22);text_at(screen,180,235,"Bitte kurz warten.",0xFFAAAAAA,18);present();}
+    if(!test_frames&&exit_code==42){SDL_FillRect(screen,NULL,0);text_at(screen,120,190,"Preparing a new IronMON run...",0xFFFFFFFF,22);text_at(screen,180,235,"Please wait.",0xFFAAAAAA,18);present();}
     lua_close(vm);r_unload_game();r_deinit();SDL_CloseAudio();SDL_Quit();return exit_code;
 }

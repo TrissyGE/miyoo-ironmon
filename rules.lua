@@ -124,7 +124,7 @@ function R.endRun(reason)
 end
 function R.canReset()
     if R.firstBattle or R.ended or R.unstableReported or count()==0 then return true end
-    R.notify('Standard: Erst den Laborkampf spielen.');return false
+    R.notify('Standard: Complete the lab battle first.');return false
 end
 function R.routeKey()
     -- regionMapSectionId unifies floors and encounter methods of a location.
@@ -147,7 +147,7 @@ function R.deposit(a,rejected)
         local dst=base+4+(b*30+s)*80
         if (rb(dst+19)&2)==0 then target=dst;break end
     end if target then break end end
-    if not target then R.endRun('Boxen voll: Kein sicherer Transfer moeglich.');return false end
+    if not target then R.endRun('Boxes full: No safe transfer available.');return false end
     local id=identity(a)
     if rejected then R.rejected[id]=true else R.dead[id]=true end
     if not clearHeld(a) then return false end -- No item can be salvaged from the box.
@@ -162,9 +162,9 @@ function R.discardCapture()
     local removed=false
     partySlots(function(a) if identity(a)==p.id then removed=R.deposit(a,true) end end)
     if not removed then boxSlots(function(a) if identity(a)==p.id then clearHeld(a);R.rejected[p.id]=true;removed=true end end) end
-    if not removed then R.endRun('Fang konnte nicht sicher verworfen werden.');return end
+    if not removed then R.endRun('Could not safely discard the catch.');return end
     partySlots(function(a) if (p.stolen or {})[identity(a)]==held(a) then clearHeld(a) end end)
-    R.pending=nil;R.save();R.notify('Fang verworfen. Route bleibt wie zuvor.');client.unpause()
+    R.pending=nil;R.save();R.notify('Catch discarded. Route status unchanged.');client.unpause()
     if miyoo.checkpoint then miyoo.checkpoint() end
 end
 function R.keepCapture()
@@ -173,7 +173,7 @@ function R.keepCapture()
         R.discardCapture();return
     end
     R.routes[p.route]=true;R.pending=nil
-    R.log('catch',p.name);R.save();client.unpause();R.notify('Fang behalten: Route verbraucht.')
+    R.log('catch',p.name);R.save();client.unpause();R.notify('Catch kept: Route used.')
     if miyoo.checkpoint then miyoo.checkpoint() end
 end
 function R.isFavourite(id)
@@ -192,7 +192,7 @@ function R.setupStarter()
         if not P.legendary[id] or R.isFavourite(id) then R.starter=id;R.starterSlot=({1,3,2})[slot];return end
         slot=slot%3+1
     end
-    R.endRun('Alle Starter sind durch die Legendaer-Regel gesperrt.')
+    R.endRun('All starters blocked by the legendary rule.')
 end
 local function bagSnapshot()
     local sb=rd(GameSettings.gSaveBlock1ptr);local sb2=rd(GameSettings.gSaveBlock2ptr)
@@ -253,7 +253,7 @@ local function enforceBag()
                 if not P.shopAllowed(id) and next(lostBalls) then
                     removeItem(now,id,gained)
                     for ball,n in pairs(lostBalls) do restoreBalls(now,ball,n) end
-                    R.notify('Ball-Tausch gegen andere Items gesperrt.')
+                    R.notify('Trading balls for other items is blocked.')
                 else R.pickup={map=Program.GameData.mapId,age=0} end
             end
         end
@@ -262,7 +262,7 @@ local function enforceBag()
                 wd(now.sb+0x290,math.min(999999,now.money+R.purchase.money)~now.key)
                 ww(now.sb+0x294,math.max(0,now.coins-R.purchase.coins)~(now.key&0xffff))
             elseif R.coinPurchase then ww(now.sb+0x294,(now.coins+R.coinPurchase.coins)~(now.key&0xffff)) end
-            R.purchase=nil;R.coinPurchase=nil;R.notify('Kauf gesperrt: Nur Baelle und Repels.');R.log('guard','shop rejected')
+            R.purchase=nil;R.coinPurchase=nil;R.notify('Purchase blocked: Balls and Repels only.');R.log('guard','shop rejected')
         end
         if legalPurchase then R.purchase=nil;R.coinPurchase=nil end
     end
@@ -286,13 +286,21 @@ local function oldManTutorial()
     -- player's roster. Program.inCatchingTutorial can clear before Battle does.
     return (rd(GameSettings.gBattleTypeFlags)&0x200)~=0
 end
+local function towerStoryGhost()
+    -- StartMarowakBattle uses GHOST | GHOST_UNVEILED with the Silph Scope.
+    -- The unveiled bit alone also means LEGENDARY, so require BOTH bits.
+    -- Ordinary Tower encounters and other scripted/legendary battles stay normal.
+    return (rd(GameSettings.gBattleTypeFlags)&0xa000)==0xa000
+end
 local function finishBattle(b)
     if oldManTutorial() then return end
     local outcome=rb(GameSettings.gBattleOutcome)
     if not b.wild and outcome==1 then R.trainers[b.trainer]=true;R.save()
     elseif b.wild and outcome==1 then
-        local _,action=P.wildResult(R.routes[b.route],outcome,b.shiny,false)
-        if action=='violation' then R.endRun('Regelbruch: Zweiter Wild-KO an diesem Ort.');return end
+        local action
+        if b.storyGhost or towerStoryGhost() then action='story'
+        else local used;used,action=P.wildResult(R.routes[b.route],outcome,b.shiny,false) end
+        if action=='violation' then R.endRun('Rule broken: Second wild KO at this location.');return end
         if action=='kill' then R.routes[b.route]=true end
         R.log(action,R.routeName());R.save()
     elseif b.wild and outcome==7 then
@@ -303,13 +311,13 @@ local function finishBattle(b)
             found.stolen=b.stolen
             R.pending=found;R.save();client.pause();if miyoo.checkpoint then miyoo.checkpoint() end
             if R.routes[b.route] or (P.legendary[found.species] and not R.isFavourite(found.species)) then R.discardCapture() end
-        else R.endRun('Fangdaten unklar: Run angehalten.');end
+        else R.endRun('Catch data unclear: Run stopped.');end
     end
     -- Items stolen from wild mons may only be retained if the mon is kept.
     if b.wild and outcome~=7 then
         partySlots(function(a)
             local item=held(a)
-            if item~=0 and (b.stolen or {})[identity(a)]==item then clearHeld(a);R.notify('Wildes Item entfernt (Diebstahlregel).') end
+            if item~=0 and (b.stolen or {})[identity(a)]==item then clearHeld(a);R.notify('Stolen wild item removed (Thief rule).') end
         end)
     end
 end
@@ -326,7 +334,7 @@ function R.update()
         end
         if R.unstableFrames>=120 and not R.unstableReported then
             R.unstableReported=true;client.pause()
-            R.notify('Pokemon-Daten instabil: sicher angehalten.')
+            R.notify('Unstable Pokemon data: Safely paused.')
             R.log('guard','party data stayed invalid; paused without a run loss')
         end
         return
@@ -347,11 +355,13 @@ function R.update()
     end
     local inBattle=Battle.inBattleScreen
     if inBattle and not R.battle then
-        local b={route=R.routeKey(),wild=Battle.isWildEncounter,before=roster(),items={},stolen={},shiny=isShiny(GameSettings.estats),trainer=rw(GameSettings.gTrainerBattleOpponent_A)}
-        if not b.wild and (R.trainers[b.trainer] or TrackerAPI.hasDefeatedTrainer(b.trainer)) then R.endRun('Regelbruch: Trainer-Revanche.');return end
+        local b={route=R.routeKey(),wild=Battle.isWildEncounter,before=roster(),items={},stolen={},shiny=isShiny(GameSettings.estats),trainer=rw(GameSettings.gTrainerBattleOpponent_A),storyGhost=towerStoryGhost()}
+        if not b.wild and (R.trainers[b.trainer] or TrackerAPI.hasDefeatedTrainer(b.trainer)) then R.endRun('Rule broken: Trainer rematch.');return end
         partySlots(function(a) b.items[identity(a)]=held(a) end)
         R.battle=b;R.firstBattle=true;R.save()
     elseif R.battle and not inBattle then local b=R.battle;R.battle=nil;finishBattle(b) end
+    -- Retain late identification even if the game clears flags before battle exit.
+    if R.battle and inBattle and towerStoryGhost() then R.battle.storyGhost=true end
     if R.battle and R.battle.wild and rb(GameSettings.gBattleOutcome)==0 then
         partySlots(function(a) local id=identity(a);local item=held(a)
             if R.battle.items[id]==0 and item>0 then R.battle.stolen[id]=item end
@@ -367,17 +377,17 @@ function R.update()
         elseif not R.dead[id] and not R.rejected[id] then living=living+1 end
         if R.dead[id] or R.rejected[id] then
             clearHeld(a);ww(a+86,0) -- A Center or Revive never resurrects a dead mon.
-        elseif P.bannedItems[held(a)] and not R.lab() then clearHeld(a);R.notify('Verbotenes getragenes Item entfernt.') end
+        elseif P.bannedItems[held(a)] and not R.lab() then clearHeld(a);R.notify('Banned held item removed.') end
         -- Disable the optional Faster FireRed friendship boost in Viridian.
         local g,k=growth(a);local v=rd(g+8)~k;local friendship=(v>>8)&255
         R.friendship=R.friendship or {}
         if not inBattle and R.friendship[id] and friendship-R.friendship[id]>10 and R.routeName():find('Viridian',1,true) then
             friendship=R.friendship[id];setGrowth(a,2,(v&~0xff00)|(friendship<<8))
-            R.notify('Optionaler Freundschaftsbonus gesperrt.')
+            R.notify('Optional friendship bonus blocked.')
         end
         R.friendship[id]=friendship
     end)
-    if real>0 and living==0 then R.endRun('Game Over: Das ganze Team ist besiegt.');return end
+    if real>0 and living==0 then R.endRun('Game over: Your entire team has fainted.');return end
     if not inBattle and not R.pending and inField() then
         -- Compact backwards so that removing a party slot cannot skip its successor.
         for i=count()-1,0,-1 do local a=party()+i*100;local id=identity(a)
@@ -391,7 +401,7 @@ function R.update()
             local id=species(party());local sb=rd(GameSettings.gSaveBlock1ptr)
             local chosen=rw(sb+(GameSettings.gameVarsOffset or 0x1000)+0x62)+1
             if not R.isFavourite(id) and (id~=R.starter or chosen~=R.starterSlot) then
-                R.endRun('Regelbruch: Anderer als der ausgeloste Starter.');return
+                R.endRun('Rule broken: Chose an unassigned starter.');return
             end
         end
     end
