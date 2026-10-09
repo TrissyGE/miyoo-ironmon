@@ -60,6 +60,14 @@ Memory addresses come from the Tracker's
 
 QA ROMs and saves remain local and are never distributed.
 
+The Safari/menu bag fix also references [start_menu.c](https://github.com/pret/pokefirered/blob/037335f4c725d7c9aecdac87066f2002b4bd7e14/src/start_menu.c),
+[item.c](https://github.com/pret/pokefirered/blob/037335f4c725d7c9aecdac87066f2002b4bd7e14/src/item.c),
+[money.c](https://github.com/pret/pokefirered/blob/037335f4c725d7c9aecdac87066f2002b4bd7e14/src/money.c)
+and load_save.c at the same pinned commit (checked 9 October 2026). Menu returns
+move save blocks and re-encrypt quantities/currency before publishing a new
+key. Incomplete snapshots must never drop slots or fabricate purchase deltas.
+Empty slots contain encrypted zero; they are included in validation.
+
 ## Input and dependency checksums
 
 - User's unmodified FireRed USA Rev 1, SHA-1: `dd5945db9b930750cb39d00c84da8571feebf417`.

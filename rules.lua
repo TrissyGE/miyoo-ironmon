@@ -198,12 +198,19 @@ local function bagSnapshot()
     local sb=rd(GameSettings.gSaveBlock1ptr);local sb2=rd(GameSettings.gSaveBlock2ptr)
     if not valid(sb,0x3d68) or not valid(sb2,0xf24) then return end
     local key=rd(sb2+0xf20);local slots,totals={},{}
+    local money=rd(sb+0x290)~key;local coins=rw(sb+0x294)~(key&0xffff)
+    -- Menu/save transitions can yield between save-block copying, quantity
+    -- re-encryption and publishing the new key. Never diff a partial bag:
+    -- dropping unreadable slots makes every owned item look newly purchased
+    -- on the next frame. Validate even empty slots (encrypted zero).
+    if money>999999 or coins>9999 then return end
     for _,p in ipairs({{0x310,42},{0x3b8,30},{0x430,13},{0x464,58},{0x54c,43}}) do
         for i=0,p[2]-1 do local a=sb+p[1]+i*4;local id=rw(a);local n=rw(a+2)~(key&0xffff)
-            if id>0 and n>0 and n<=999 then slots[#slots+1]={a=a,id=id,n=n};totals[id]=(totals[id] or 0)+n end
+            if id>374 or (id==0 and n~=0) or (id>0 and (n==0 or n>999)) then return end
+            if id>0 then slots[#slots+1]={a=a,id=id,n=n};totals[id]=(totals[id] or 0)+n end
         end
     end
-    return {sb=sb,key=key,slots=slots,totals=totals,money=rd(sb+0x290)~key,coins=rw(sb+0x294)~(key&0xffff)}
+    return {sb=sb,sb2=sb2,key=key,slots=slots,totals=totals,money=money,coins=coins}
 end
 local function removeItem(bag,id,n)
     for _,s in ipairs(bag.slots) do if s.id==id and n>0 then
@@ -237,7 +244,12 @@ end
 local function enforceBag()
     local now=bagSnapshot();if not now then return end
     local prev=R.bag
-    if prev and prev.sb==now.sb then
+    if prev and (prev.sb~=now.sb or prev.sb2~=now.sb2 or prev.key~=now.key) then
+        -- An encryption/relocation boundary starts a new observation baseline;
+        -- spending evidence from the previous epoch cannot authorize an edit.
+        R.purchase=nil;R.coinPurchase=nil;R.pickup=nil;prev=nil
+    end
+    if prev then
         if now.money<prev.money then R.purchase={money=prev.money-now.money,coins=math.max(0,now.coins-prev.coins),age=0} end
         if now.coins<prev.coins then R.coinPurchase={coins=prev.coins-now.coins,age=0} end
         local bannedPurchase,legalPurchase=false,false

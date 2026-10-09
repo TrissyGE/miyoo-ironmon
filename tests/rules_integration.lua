@@ -77,6 +77,70 @@ slot=0x02025500+0x430
 w16(slot,4);w16(slot+2,2~0x5678);w32(0x02025500+0x290,2600~0x12345678);R.update()
 assert((r16(slot+2)~0x5678)==2,'legal balls removed')
 assert((r32(0x02025500+0x290)~0x12345678)==2600,'legal purchase refunded')
+-- Menu/save key transitions must never turn the owned bag into a purchase.
+local sb,sb2=0x02025500,0x02024400
+local pockets={{0x310,42},{0x3b8,30},{0x430,13},{0x464,58},{0x54c,43}}
+local function bagRecord()
+    local data={r32(sb+0x290),r16(sb+0x294)}
+    for _,p in ipairs(pockets) do for i=0,p[2]-1 do data[#data+1]=r32(sb+p[1]+i*4) end end
+    return table.concat(data,',')
+end
+local function rekey(newKey,publish)
+    local old=r32(sb2+0xf20)
+    for _,p in ipairs(pockets) do for i=0,p[2]-1 do
+        local a=sb+p[1]+i*4+2;w16(a,r16(a)~(old&65535)~(newKey&65535))
+    end end
+    w32(sb+0x290,r32(sb+0x290)~old~newKey)
+    w16(sb+0x294,r16(sb+0x294)~(old&65535)~(newKey&65535))
+    if publish then w32(sb2+0xf20,newKey) end
+end
+w16(sb+0x3b8,364);w16(sb+0x3ba,1~0x5678) -- TM Case
+w16(sb+0x464,289);w16(sb+0x466,2~0x5678)
+w16(sb+0x54c,133);w16(sb+0x54e,3~0x5678)
+R.update();local owned=bagRecord();local good=R.bag
+-- An invalid currency value cannot become a baseline or authorize any writes.
+w32(sb+0x290,0xf0000000~0x12345678);local partial=bagRecord();R.update()
+assert(bagRecord()==partial and R.bag==good,'invalid money was observed or edited')
+w32(sb+0x290,2600~0x12345678)
+w16(sb+0x294,10000~0x5678);partial=bagRecord();R.update()
+assert(bagRecord()==partial and R.bag==good,'invalid coins were observed or edited')
+w16(sb+0x294,0x5678)
+-- Real engine ordering: encrypted quantities/currency change before the key.
+rekey(0xab94f127,false);partial=bagRecord();R.update()
+assert(bagRecord()==partial and R.bag==good,'partial re-encryption damaged the bag')
+w32(sb2+0xf20,0xab94f127);R.update()
+assert((r16(sb+0x312)~0xf127)==3 and (r16(sb+0x3ba)~0xf127)==1,'owned items/key items removed after rekey')
+assert((r16(sb+0x466)~0xf127)==2 and (r16(sb+0x54e)~0xf127)==3,'owned TMs/berries removed after rekey')
+assert((r32(sb+0x290)~0xab94f127)==2600 and not R.purchase,'rekey fabricated a shop refund')
+-- Even a low-half key change is caught by the encrypted empty slots.
+local stable=R.bag;rekey(0xab94f126,false);partial=bagRecord();R.update()
+assert(bagRecord()==partial and R.bag==stable,'small-key/empty-slot race escaped validation')
+w32(sb2+0xf20,0xab94f126);R.update()
+-- A pending money decrease from another context cannot cross a key boundary.
+w32(sb+0x290,2100~0xab94f126);R.update();assert(R.purchase)
+rekey(0x3210abcd,true);R.update();assert(not R.purchase and not R.coinPurchase,'old spending evidence survived a key change')
+w16(sb+0x466,3~0xabcd);R.update()
+assert((r16(sb+0x466)~0xabcd)==3,'ordinary pickup after a menu transition was discarded')
+-- Invalid nonempty and empty slots must not poison the complete baseline.
+stable=R.bag;w16(sb+0x312,1000~0xabcd);partial=bagRecord();R.update()
+assert(R.bag==stable and bagRecord()==partial,'invalid occupied quantity was diffed')
+w16(sb+0x312,3~0xabcd);w16(sb+0x3be,1~0xabcd);partial=bagRecord();R.update()
+assert(R.bag==stable and bagRecord()==partial,'invalid encrypted empty quantity was diffed')
+w16(sb+0x3be,0xabcd);R.update()
+-- Actual purchases remain reversible, including a partial new-slot write.
+w32(sb+0x290,1500~0x3210abcd);R.update();assert(R.purchase)
+w16(sb+0x316,2~0xabcd);partial=bagRecord();R.update()
+assert(bagRecord()==partial and R.purchase,'partial slot damaged inventory/purchase evidence')
+w16(sb+0x314,14);R.update()
+assert(r16(sb+0x314)==0 and (r16(sb+0x316)~0xabcd)==0,'banned purchase was missed after partial slot write')
+assert((r16(sb+0x312)~0xabcd)==3 and (r16(sb+0x3ba)~0xabcd)==1,'purchase removed pre-owned items')
+assert((r32(sb+0x290)~0x3210abcd)==2100,'stable purchase refund incorrect')
+w32(sb+0x290,2000~0x3210abcd);R.update();assert(R.purchase)
+w32(0x02020000+0xf20,0x3210abcd);w32(GameSettings.gSaveBlock2ptr,0x02020000)
+w16(sb+0x550,134);w16(sb+0x552,1~0xabcd);R.update()
+assert((r16(sb+0x552)~0xabcd)==1 and not R.purchase,'save-block relocation reused earlier spending evidence')
+w32(GameSettings.gSaveBlock2ptr,sb2);R.update()
+print('PASS: bag/currency validation, encrypted empty slots, menu rekey races, owned items and exact purchase reversal')
 -- Withdrawing a dead mon is caught before it can be used.
 w8(GameSettings.gPlayerPartyCount,2);mon(1,24,25,20,0)
 w32(0x030030f4,0x08000001);R.update()

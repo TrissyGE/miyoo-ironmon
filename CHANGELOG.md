@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.2 - 2026-10-09
+
+- Fix destructive bag comparisons during menu/save encryption transitions, reported after opening the Safari Zone menu.
+- Validate every occupied and empty bag slot, money and coins before applying guards; retain the last complete observation through partial frames.
+- Reset spending evidence when a save-block pointer or encryption key changes, so pre-owned items cannot become new purchases across that boundary.
+- Add regression coverage for owned items, key items, TMs, berries, partial slot writes and exact purchase reversal, plus an isolated real-core Safari menu test.
+
 ## 0.1.1 - 2026-10-08
 
 - Correct the encoding of punctuation, arrows and accented text in the English README and changelog.

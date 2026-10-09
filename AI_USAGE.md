@@ -38,6 +38,8 @@ layouts and Tracker interactions, ROM preparation, catch/tutorial guards,
 encrypted party-record integrity, fainting with a surviving teammate, switching,
 winning and graveyard transfers. Release work also tests SD-card setup, updates,
 backup/rollback behavior and dependency checks.
+The bag fix also covers incomplete encryption frames and actual Safari start/bag
+menu transitions, with owned quantities and money retained in an isolated test.
 
 A full story playthrough and every script/rule edge case have **not** been
 regression-tested. Automated checks were also largely written with AI assistance;

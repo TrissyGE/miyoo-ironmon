@@ -110,6 +110,15 @@ late/cleared flags, normal wild/legendary/scripted encounters and actual deaths.
 Only the combined GHOST and GHOST_UNVEILED flags exempt a winning story KO;
 party, death, capture and stolen-item guards remain active.
 
+Bag regression coverage validates occupied/empty slots and currency, incomplete
+quantity/key updates, save-block relocation, retained owned items across every
+pocket, and exact reversal of a purchase interrupted during a slot write.
+`tests/safari_menu.lua` requires `IRONMON_SAFARI_QA=1`, the isolated QA marker,
+and a populated Safari checkpoint with the start-menu cursor on POKEMON. Run
+1300 frames. Real START/DOWN/A/B inputs open the start and bag menus twice,
+exercise the game's key changes and compare all owned items/quantities and
+money with the initial observation. Require its explicit PASS line.
+
 `launch.sh --prepare-cache` creates two distinct randomized ROMs, each with its
 own emulated lab state after Mom's event. The launcher verifies the ROM hash
 before loading a prepared state. Preparation uses SDL dummy drivers and real

@@ -42,6 +42,7 @@ Releases contain no ROMs, BIOS files or saves; the installer never uploads them.
 - **Quick resets:** Faster FireRed 1.3.2, Oak intro skip, fixed names and two background-prepared seeds, each with a verified lab checkpoint after Mom. An empty cache needs time to refill.
 - **Handheld conveniences:** hold/toggle fast forward, low-HP and poison warnings, a protected reset shortcut, autosave/resume, run history and eight completed-run backups by default.
 - **Safer party handling:** encrypted records and checksums are checked before edits. Temporary party transitions are allowed to settle; persistent invalid data pauses play without recording a loss.
+- **Safer bag guards:** complete quantities and currency are validated before edits. Menu/save key changes start a fresh comparison, preserving items you already own.
 
 | Your Pokémon and stat stages | Enemy tracking and markings |
 | --- | --- |
