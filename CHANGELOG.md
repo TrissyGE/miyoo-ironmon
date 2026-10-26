@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Document the owner's completed main-story playthrough on Miyoo Mini Plus: Run 31, eight badges and a verified Hall of Fame entry.
+- Add the final team, an actual ending-credits screenshot, verification sources and the development-run recovery history.
+- Update the README and AI disclosure to distinguish completed human playtesting from incomplete automated regression coverage. App behavior and the 0.1.2 installers are unchanged.
+
 ## 0.1.2 - 2026-10-09
 
 - Fix destructive bag comparisons during menu/save encryption transitions, reported after opening the Safari Zone menu.

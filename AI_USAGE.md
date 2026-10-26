@@ -17,7 +17,9 @@ not AI-generated artwork or mockups.
 
 The owner chose goals and priorities, authorized changes, played on the physical
 Miyoo, reported display/control/rule bugs, evaluated the experience and requested
-this public release. Those real-world reports guided several fixes.
+this public release. The owner has also completed the main story on the handheld;
+[Run 31 and its validation record](docs/VALIDATION.md) document that milestone.
+Those real-world reports guided several fixes.
 
 This was a human-directed process with substantial AI authorship. It should not
 be described as entirely hand-written or independently audited.
@@ -41,8 +43,12 @@ backup/rollback behavior and dependency checks.
 The bag fix also covers incomplete encryption frames and actual Safari start/bag
 menu transitions, with owned quantities and money retained in an isolated test.
 
-A full story playthrough and every script/rule edge case have **not** been
-regression-tested. Automated checks were also largely written with AI assistance;
+The owner-completed Run 31 has eight badges and a verified Hall of Fame entry.
+The completed checkpoint was reviewed on 26 October 2026. It was a development
+playthrough that included Tower ghost false-loss recovery and Safari inventory
+reconstruction; it demonstrates main-story completion on the handheld. Every
+script/rule edge case has **not** been regression-tested. Automated checks were
+also largely written with AI assistance;
 passing them is evidence about those scenarios, not an independent guarantee
 that the code is correct. This is an early community release. Bug reports and
 human review are welcome, especially around save integrity and rule enforcement.

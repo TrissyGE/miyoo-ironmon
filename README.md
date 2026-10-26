@@ -7,6 +7,7 @@
 [![Release](https://img.shields.io/github/v/release/TrissyGE/miyoo-ironmon?include_prereleases)](https://github.com/TrissyGE/miyoo-ironmon/releases/latest)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue)](LICENSE)
 [![Device](https://img.shields.io/badge/Miyoo-Mini%20Plus-ffcf83)](INSTALL.md)
+[![Main story completed](https://img.shields.io/badge/main%20story-completed-2ea44f)](docs/VALIDATION.md#owner-completed-run)
 [![AI disclosure](https://img.shields.io/badge/AI%20assisted-disclosed-9b8afb)](AI_USAGE.md)
 
 [**Download & install**](https://github.com/TrissyGE/miyoo-ironmon/releases/latest) · [Installation guide](INSTALL.md) · [Controls](#controls) · [Sources & credits](SOURCES.md)
@@ -53,11 +54,25 @@ Releases contain no ROMs, BIOS files or saves; the installer never uploads them.
 These are actual frames from an isolated installation on the Miyoo using the real
 gpSP core. They are not interface mockups.
 
+## A completed handheld run
+
+**The owner has completed the main story on the Miyoo Mini Plus.** Run 31 reached
+the Hall of Fame with all eight badges, led by **Slaking, level 99**, with Flame
+Body and Leftovers. The final team also includes Bellossom, Rapidash, Politoed,
+Swellow and Relicanth.
+
+![Actual ending credits from the owner's completed Run 31, with Slaking in the Tracker](docs/images/run31-credits.png)
+
+The completed checkpoint and Hall of Fame records were checked on 26 October 2026.
+This development playthrough included recovery from the Tower ghost false loss
+and the Safari bag bug. [Full team, evidence, screenshot provenance and testing scope →](docs/VALIDATION.md)
+
 ## Standard rules, with guardrails
 
 This release targets [**Standard IronMON**](https://gist.github.com/valiant-code/adb18d248fa0fae7da6b639e2ee8f9c1#standard-ironmon-ruleset).
 Read the rules before playing; automation does not replace player responsibility.
-A complete story playthrough has not been regression-tested.
+The owner-completed main story is documented in the [validation record](docs/VALIDATION.md).
+Exhaustive story-script and rule-edge-case regression coverage remains incomplete.
 
 - One catch **or** wild KO per location, shared across floors and methods; the additional shiny-KO exception is supported.
 - New catches can be discarded before stats are shown. Scouts may throw balls; catches on used routes are discarded unseen.

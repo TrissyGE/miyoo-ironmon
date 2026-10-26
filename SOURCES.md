@@ -68,6 +68,14 @@ move save blocks and re-encrypt quantities/currency before publishing a new
 key. Incomplete snapshots must never drop slots or fabricate purchase deltas.
 Empty slots contain encrypted zero; they are included in validation.
 
+## Completed-run verification
+
+The [completed Run 31 validation record](docs/VALIDATION.md), checked on
+26 October 2026, links the additional primary references used to interpret
+Hall of Fame records, save-sector checksums, game-clear flags, encrypted game
+statistics and the final team. The record also documents its screenshot and
+development-run repairs.
+
 ## Input and dependency checksums
 
 - User's unmodified FireRed USA Rev 1, SHA-1: `dd5945db9b930750cb39d00c84da8571feebf417`.
