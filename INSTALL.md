@@ -47,7 +47,7 @@ In [Mixtape](https://github.com/snyderman3000/mixtape), add this catalog URL to
 the `sources` array in `App/Mixtape/data/config.json` and restart Mixtape:
 
 ```text
-https://raw.githubusercontent.com/TrissyGE/miyoo-ironmon/main/mixtape.json
+https://raw.githubusercontent.com/TrissyGE/miyoo-ironmon/refs/heads/main/mixtape.json
 ```
 
 Keep the existing settings and catalog entries in that file. Then find
