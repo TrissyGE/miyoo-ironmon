@@ -1,0 +1,24 @@
+{
+  "name": "Miyoo IronMON",
+  "homepage": "https://github.com/TrissyGE/miyoo-ironmon",
+  "ports": [
+    {
+      "name": "Miyoo IronMON",
+      "version": "0.1.3",
+      "url": "https://github.com/TrissyGE/miyoo-ironmon/releases/download/v0.1.3/IronMON-v0.1.3-OnionOS.zip",
+      "sha256": "fb319a1ee6b46553c6044516b6176fbdcba671736e0a004427725f4201c0e0bc",
+      "size": 395439,
+      "categories": [
+        "app"
+      ],
+      "status": "playable",
+      "assets": "owned",
+      "porter": [
+        "TrissyGE"
+      ],
+      "upstream": "https://github.com/TrissyGE/miyoo-ironmon",
+      "image": "https://raw.githubusercontent.com/TrissyGE/miyoo-ironmon/9570265852b4b171e936ad55864d3cdaeaf9ca50/docs/images/battle-own.png",
+      "notes": "Miyoo Mini Plus, tested on Onion 4.4 beta. Put FireRed USA Rev 1 at App/IronMON-Mixtape/source.gba and your GBA BIOS at BIOS/gba_bios.bin. Wi-Fi for first setup only. Start IronMON (Mixtape) in Apps."
+    }
+  ]
+}
