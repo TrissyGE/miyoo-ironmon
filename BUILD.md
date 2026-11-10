@@ -65,6 +65,14 @@ The EXE's guarded packaging check can be run with
 creates/closes the Tk UI. A successful self-test does not replace installation
 and real-device checks.
 
+To also produce the Mixtape ZIP, build the ARM Lua CLI with
+`python3 build.py --lua`, then pass `--mixtape` to `build_release.py`. The ZIP
+uses the same ARM frontend and rule scripts in `App/IronMON-Mixtape/`, with a
+first-launch setup and no mutable player files. `mixtape.json` beside the ZIP
+records the versioned download URL and checksum; publish it to the project root
+only after the matching ZIP is available. Java archive layout metadata and the
+shared intro/shop offsets are generated at package time.
+
 ## Tests
 
 Run `python3 -m unittest discover -s tests -p 'test_*.py'` on the host. Build with
@@ -82,6 +90,18 @@ corrupt downloads/payloads, wrong inputs, unsafe archives and FAT32-compatible
 Java links. A changed prepared ROM base invalidates reserve seeds while retaining
 the current run. GitHub Actions runs these tests on Windows and Linux; it does
 not build the device executable or run copyrighted game fixtures.
+
+For the store package, copy `tests/mixtape_store_test.go` into an isolated
+[Mixtape checkout](https://github.com/snyderman3000/mixtape/tree/ffb88ad1c9efa5f74b7e88345c1ff94fa5cbf00b),
+set `IRONMON_STORE_ZIP` and `IRONMON_STORE_CATALOG` to the generated files, and
+run `go test -mod=mod -run '^TestMiyooIronMONStore$' -v .` on Linux. This uses Mixtape's
+catalog parser and real install, update and Erase code against a temporary SD
+directory, including bad-download rejection and player-file preservation.
+On a separate device app directory, `sh mixtape-launch.sh --setup-only`
+verifies downloads and prepares the user's ROM without starting gameplay.
+Compare the prepared SHA-256 with the Python installer using the same settings,
+then create a seed and check that the real core loads it. Never publish the
+test ROM, BIOS, seed, save or logs containing player data.
 
 The rule suite also checks Old Man tutorial entry/exit flag races, field guards
 after a persistent tutorial flag, actual capture confirmation and second-KO

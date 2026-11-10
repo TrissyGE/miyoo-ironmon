@@ -73,6 +73,7 @@ def main():
     parser.add_argument('--output', type=Path, default=ROOT / 'release')
     parser.add_argument('--payload-only', action='store_true')
     parser.add_argument('--windows', action='store_true')
+    parser.add_argument('--mixtape', action='store_true', help='Also build the Onion SD-root ZIP and its catalog entry.')
     args = parser.parse_args()
     app, manifest = payload()
     if args.payload_only:
@@ -109,6 +110,9 @@ def main():
         subprocess.run(command, cwd=ROOT, check=True)
         runtime_notices = [(path, 'installer-licenses/' + path.name) for path in sorted(notices.iterdir()) if path.is_file()]
         zip_files(out / 'IronMON-Setup-Windows.zip', [(out / 'IronMON-Setup.exe', 'IronMON-Setup.exe')] + docs + runtime_notices)
+    if args.mixtape:
+        from store.package import build_store
+        build_store(out, app, manifest)
     assets = sorted(out.glob('*.zip'))
     if args.windows:
         assets.append(out / 'IronMON-Setup.exe')

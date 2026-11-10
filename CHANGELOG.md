@@ -1,10 +1,13 @@
 # Changelog
 
-## Unreleased
+## 0.1.3 - 2026-11-10
 
+- Add a Mixtape catalog and a separate SD-root ZIP for handheld installation.
+- Prepare the user's ROM and verify pinned dependency downloads on first launch. The package contains no ROM, BIOS, game save or Faster FireRed IPS.
+- Keep the store edition separate from existing PC-installed runs. Store archive updates and Erase leave player files in place.
 - Document the owner's completed main-story playthrough on Miyoo Mini Plus: Run 31, eight badges and a verified Hall of Fame entry.
 - Add the final team, an actual ending-credits screenshot, verification sources and the development-run recovery history.
-- Update the README and AI disclosure to distinguish completed human playtesting from incomplete automated regression coverage. App behavior and the 0.1.2 installers are unchanged.
+- Update the README and AI disclosure to distinguish completed human playtesting from incomplete automated regression coverage.
 
 ## 0.1.2 - 2026-10-09
 

@@ -35,6 +35,9 @@
 !/AI_USAGE.md
 !/CHANGELOG.md
 !/CONTRIBUTING.md
+!/store/
+!/store/**
+!/mixtape.json
 !/docs/
 !/docs/**
 !/.github/

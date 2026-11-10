@@ -42,6 +42,10 @@ winning and graveyard transfers. Release work also tests SD-card setup, updates,
 backup/rollback behavior and dependency checks.
 The bag fix also covers incomplete encryption frames and actual Safari start/bag
 menu transitions, with owned quantities and money retained in an isolated test.
+For the Mixtape package, the handheld verified the pinned dependency downloads,
+produced the same prepared ROM as the PC installer, and loaded a fresh seed.
+A separate test uses Mixtape's installer to check that install, update and
+Erase leave player files intact.
 
 The owner-completed Run 31 has eight badges and a verified Hall of Fame entry.
 The completed checkpoint was reviewed on 26 October 2026. It was a development

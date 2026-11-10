@@ -28,6 +28,16 @@ runtime dependencies. Applicable notices are in the release ZIP's
 bundled applications to retain their own licenses. Packaging sources/references
 are in [SOURCES.md](SOURCES.md).
 
+## Mixtape package
+
+The SD-root ZIP additionally includes the ARM Lua 5.4.8 CLI built from the same
+Lua source and covered by [LUA-LICENSE.txt](LUA-LICENSE.txt). It also includes
+the Mozilla CA certificate bundle, in PEM source form, from
+[Mixtape's pinned bundle](https://github.com/snyderman3000/mixtape/blob/ffb88ad1c9efa5f74b7e88345c1ff94fa5cbf00b/assets/cacert.pem).
+The bundle is MPL-2.0 and keeps its original header and full license in
+`store/MPL-2.0-cacert.txt`. See [curl's CA extract documentation](https://curl.se/docs/caextract.html)
+for upstream origins. The device uses Onion's `curl`; Mixtape itself is separate.
+
 ## Supplied by the device / user
 
 Onion's gpSP core, SDL libraries, firmware libraries, the user's ROM and GBA BIOS

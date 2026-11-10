@@ -41,6 +41,38 @@ to a safe location, then copy the chosen backup to `App/IronMON`. Remove old
 backups yourself when no longer needed. Do not restore completed runs to continue
 an IronMON challenge.
 
+## Mixtape / install on the handheld
+
+In [Mixtape](https://github.com/snyderman3000/mixtape), add this catalog URL to
+the `sources` array in `App/Mixtape/data/config.json` and restart Mixtape:
+
+```text
+https://raw.githubusercontent.com/TrissyGE/miyoo-ironmon/main/mixtape.json
+```
+
+Keep the existing settings and catalog entries in that file. Then find
+**Miyoo IronMON** in Mixtape's Apps tab and install it. You can also download
+**IronMON-vX.Y.Z-OnionOS.zip** from [Releases](https://github.com/TrissyGE/miyoo-ironmon/releases/latest)
+and extract it at the SD-card root.
+
+1. Put your unmodified FireRed USA Rev 1 `.gba` at `App/IronMON-Mixtape/source.gba`.
+2. Put your GBA BIOS at `BIOS/gba_bios.bin` if it is not already there. Both files
+   must match the hashes in [What you need](#what-you-need).
+3. Turn on Wi-Fi and open **Apps → IronMON (Mixtape)**. The first launch verifies
+   about 52 MiB of dependency downloads and prepares the ROM on the handheld.
+   Keep it powered on through setup and the first seed. After that, play and
+   reset offline.
+
+This edition uses `App/IronMON-Mixtape/` and can coexist with a PC-installed
+`App/IronMON/`. Store updates preserve your ROM, run, notes and settings.
+Mixtape's Erase removes packaged files; the player files and first-run downloads
+stay in the app folder. Copy them somewhere safe if you want to free that space.
+Setup errors appear on the handheld, with details in `data/store-setup.log`
+inside the Mixtape app folder.
+
+The tested device and Onion version are the same as above. The store edition
+also needs Onion's `curl` and `unzip` for its first setup.
+
 ## Python / Linux / macOS
 
 Download **IronMON-Setup-Python.zip**, extract it and use Python **3.11 or newer**:

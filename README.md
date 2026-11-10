@@ -32,6 +32,9 @@ It downloads pinned upstream dependencies, checks their hashes, prepares your RO
 locally, and backs up an existing app before replacing it. Runs, notes and settings
 are preserved. [Full instructions, updates and the Python option →](INSTALL.md)
 
+Already using [Mixtape](https://github.com/snyderman3000/mixtape)?
+[Add the IronMON catalog and set up on the handheld →](INSTALL.md#mixtape--install-on-the-handheld)
+
 Tested on **Miyoo Mini Plus / Onion v4.4.0-beta-20260120-07505ea5**.
 Other Onion versions and the original Miyoo Mini have not been verified.
 Releases contain no ROMs, BIOS files or saves; the installer never uploads them.

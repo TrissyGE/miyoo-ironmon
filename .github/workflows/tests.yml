@@ -26,4 +26,4 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_*.py' -v
       - name: Shell syntax
         if: runner.os == 'Linux'
-        run: sh -n launch.sh && sh -n seed-cache.sh
+        run: sh -n launch.sh && sh -n seed-cache.sh && sh -n store/launch.sh && sh -n store/setup.sh
